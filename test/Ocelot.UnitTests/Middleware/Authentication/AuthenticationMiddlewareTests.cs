@@ -7,24 +7,20 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Ocelot.Authentication.Handler;
-using Ocelot.Authentication.Handler.Factory;
-using Ocelot.Authentication.Middleware;
-using Ocelot.Cache.Middleware;
-using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
+using Ocelot.Middleware.Authentication;
+using Ocelot.Middleware.Authentication.Handler.Factory;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Authentication
+namespace Ocelot.UnitTests.Middleware.Authentication
 {
     public class AuthenticationMiddlewareTests : IDisposable
     {

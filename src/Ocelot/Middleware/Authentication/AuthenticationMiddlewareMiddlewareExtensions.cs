@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Authentication.Middleware
+namespace Ocelot.Middleware.Authentication
 {
     public static class AuthenticationMiddlewareMiddlewareExtensions
     {

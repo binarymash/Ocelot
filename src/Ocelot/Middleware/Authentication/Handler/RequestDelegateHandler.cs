@@ -1,7 +1,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.Authentication.Handler
+namespace Ocelot.Middleware.Authentication.Handler
 {
     public class RequestDelegateHandler : IHandler
     {

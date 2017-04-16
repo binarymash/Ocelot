@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Responses;
 
-namespace Ocelot.Authentication.Handler.Creator
+namespace Ocelot.Middleware.Authentication.Handler.Creator
 {
     using AuthenticationOptions = Configuration.AuthenticationOptions;
 

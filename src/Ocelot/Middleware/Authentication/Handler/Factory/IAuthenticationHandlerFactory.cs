@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Ocelot.Responses;
 
-namespace Ocelot.Authentication.Handler.Factory
+namespace Ocelot.Middleware.Authentication.Handler.Factory
 {
     using AuthenticationOptions = Configuration.AuthenticationOptions;
 

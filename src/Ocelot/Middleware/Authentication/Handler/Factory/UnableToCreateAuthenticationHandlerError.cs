@@ -1,6 +1,6 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.Authentication.Handler.Factory
+namespace Ocelot.Middleware.Authentication.Handler.Factory
 {
     public class UnableToCreateAuthenticationHandlerError : Error
     {

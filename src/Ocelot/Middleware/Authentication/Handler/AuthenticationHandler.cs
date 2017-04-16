@@ -1,4 +1,4 @@
-﻿namespace Ocelot.Authentication.Handler
+﻿namespace Ocelot.Middleware.Authentication.Handler
 {
     public class AuthenticationHandler
     {

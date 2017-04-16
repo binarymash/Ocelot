@@ -1,13 +1,12 @@
-﻿using System.Collections.Generic;
-using IdentityServer4.AccessTokenValidation;
+﻿using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
-using Ocelot.Authentication.Middleware;
 using Ocelot.Cache.Middleware;
 using Ocelot.Claims.Middleware;
 using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
+using Ocelot.Middleware.Authentication;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
@@ -20,7 +19,6 @@ namespace Ocelot.Middleware
     using System;
     using System.Threading.Tasks;
     using Authorisation.Middleware;
-    using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
     using Ocelot.Configuration;
