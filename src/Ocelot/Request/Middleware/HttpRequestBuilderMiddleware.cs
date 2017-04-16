@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
+using Ocelot.Middleware.RequestId;
 using Ocelot.Request.Builder;
 using Ocelot.Requester.QoS;
 
@@ -50,7 +51,7 @@ namespace Ocelot.Request.Middleware
                     context.Request.Headers,
                     context.Request.QueryString,
                     context.Request.ContentType,
-                    new RequestId.RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier),
+                    new RequestId(DownstreamRoute?.ReRoute?.RequestIdKey, context.TraceIdentifier),
                     DownstreamRoute.ReRoute.IsQos,
                     qosProvider.Data);
 

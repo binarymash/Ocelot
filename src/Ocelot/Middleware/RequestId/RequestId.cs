@@ -1,4 +1,4 @@
-﻿namespace Ocelot.RequestId
+﻿namespace Ocelot.Middleware.RequestId
 {
     public class RequestId
     {

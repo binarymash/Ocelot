@@ -14,13 +14,13 @@ using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.RequestId.Middleware;
+using Ocelot.Middleware.RequestId;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.RequestId
+namespace Ocelot.UnitTests.Middleware.RequestId
 {
     public class RequestIdMiddlewareTests
     {

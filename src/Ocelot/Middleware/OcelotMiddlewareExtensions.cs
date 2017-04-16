@@ -21,9 +21,9 @@
     using Ocelot.Middleware.LoadBalancing;
     using Ocelot.Middleware.QueryStrings;
     using Ocelot.Middleware.RateLimit;
+    using Ocelot.Middleware.RequestId;
     using Ocelot.Request.Middleware;
     using Ocelot.Requester.Middleware;
-    using Ocelot.RequestId.Middleware;
     using Ocelot.Responder.Middleware;
 
 

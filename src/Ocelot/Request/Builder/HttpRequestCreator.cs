@@ -1,8 +1,8 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Middleware.RequestId;
 using Ocelot.Responses;
-using Ocelot.Configuration;
 using Ocelot.Requester.QoS;
 
 namespace Ocelot.Request.Builder
@@ -11,12 +11,12 @@ namespace Ocelot.Request.Builder
     {
         public async Task<Response<Request>> Build(
             string httpMethod, 
-            string downstreamUrl, 
+            string downstreamUrl,
             Stream content, 
             IHeaderDictionary headers,
             QueryString queryString, 
             string contentType, 
-            RequestId.RequestId requestId,
+            RequestId requestId,
             bool isQos,
             IQoSProvider qosProvider)
         {

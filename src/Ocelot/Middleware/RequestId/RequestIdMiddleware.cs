@@ -4,9 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 
-namespace Ocelot.RequestId.Middleware
+namespace Ocelot.Middleware.RequestId
 {
     public class RequestIdMiddleware : OcelotMiddleware
     {

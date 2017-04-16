@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Ocelot.Middleware.RequestId;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 
@@ -14,7 +15,7 @@ namespace Ocelot.Request.Builder
             IHeaderDictionary headers,
             QueryString queryString,
             string contentType,
-            RequestId.RequestId requestId,
+            RequestId requestId,
             bool isQos,
             IQoSProvider qosProvider);
     }

@@ -26,7 +26,7 @@ namespace Ocelot.UnitTests.Request
         private string _contentType;
         private readonly IRequestCreator _requestCreator;
         private Response<Ocelot.Request.Request> _result;
-        private Ocelot.RequestId.RequestId _requestId;
+        private Ocelot.Middleware.RequestId.RequestId _requestId;
         private bool _isQos;
         private IQoSProvider _qoSProvider;
 
@@ -138,9 +138,9 @@ namespace Ocelot.UnitTests.Request
             this.Given(x => x.GivenIHaveHttpMethod("GET"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary()))
-                .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId("RequestId", requestId)))
-                              .And(x => x.GivenTheQos(true, new NoQoSProvider()))
-  .When(x => x.WhenICreateARequest())
+                .And(x => x.GivenTheRequestIdIs(new Ocelot.Middleware.RequestId.RequestId("RequestId", requestId)))
+                .And(x => x.GivenTheQos(true, new NoQoSProvider()))
+                .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
                 {
                     {"RequestId", requestId }
@@ -157,7 +157,7 @@ namespace Ocelot.UnitTests.Request
                 {
                     {"RequestId", "534534gv54gv45g" }
                 }))
-                .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId("RequestId", Guid.NewGuid().ToString())))
+                .And(x => x.GivenTheRequestIdIs(new Ocelot.Middleware.RequestId.RequestId("RequestId", Guid.NewGuid().ToString())))
                                .And(x => x.GivenTheQos(true, new NoQoSProvider()))
  .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheCorrectHeadersAreUsed(new HeaderDictionary
@@ -177,14 +177,14 @@ namespace Ocelot.UnitTests.Request
             this.Given(x => x.GivenIHaveHttpMethod("GET"))
                 .And(x => x.GivenIHaveDownstreamUrl("http://www.bbc.co.uk"))
                 .And(x => x.GivenTheHttpHeadersAre(new HeaderDictionary()))
-                .And(x => x.GivenTheRequestIdIs(new Ocelot.RequestId.RequestId(requestIdKey, requestIdValue)))
+                .And(x => x.GivenTheRequestIdIs(new Ocelot.Middleware.RequestId.RequestId(requestIdKey, requestIdValue)))
                               .And(x => x.GivenTheQos(true, new NoQoSProvider()))
   .When(x => x.WhenICreateARequest())
                 .And(x => x.ThenTheRequestIdIsNotInTheHeaders())
                 .BDDfy();
         }
 
-        private void GivenTheRequestIdIs(Ocelot.RequestId.RequestId requestId)
+        private void GivenTheRequestIdIs(Ocelot.Middleware.RequestId.RequestId requestId)
         {
             _requestId = requestId;
         }
