@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using Ocelot.Responses;
 
-namespace Ocelot.Claims
+namespace Ocelot.Middleware.ClaimsBuilder
 {
     public interface IAddClaimsToRequest
     {

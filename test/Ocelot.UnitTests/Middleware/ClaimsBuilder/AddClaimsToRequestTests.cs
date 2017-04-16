@@ -2,16 +2,16 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Moq;
-using Ocelot.Claims;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Middleware.ClaimsBuilder;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Claims
+namespace Ocelot.UnitTests.Middleware.ClaimsBuilder
 {
     public class AddClaimsToRequestTests
     {

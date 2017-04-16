@@ -7,19 +7,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
-using Ocelot.Claims;
-using Ocelot.Claims.Middleware;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
+using Ocelot.Middleware.ClaimsBuilder;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Claims
+namespace Ocelot.UnitTests.Middleware.ClaimsBuilder
 {
     public class ClaimsBuilderMiddlewareTests : IDisposable
     {

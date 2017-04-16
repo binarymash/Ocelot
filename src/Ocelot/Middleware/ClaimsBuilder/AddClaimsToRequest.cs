@@ -6,7 +6,7 @@ using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 
-namespace Ocelot.Claims
+namespace Ocelot.Middleware.ClaimsBuilder
 {
     public class AddClaimsToRequest : IAddClaimsToRequest
     {

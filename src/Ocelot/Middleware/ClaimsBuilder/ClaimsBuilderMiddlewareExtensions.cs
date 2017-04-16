@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Claims.Middleware
+namespace Ocelot.Middleware.ClaimsBuilder
 {
     public static class ClaimsBuilderMiddlewareExtensions
     {

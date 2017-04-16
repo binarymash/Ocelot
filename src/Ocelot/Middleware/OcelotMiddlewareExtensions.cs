@@ -11,13 +11,13 @@
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Setter;
     using Ocelot.LoadBalancer.Middleware;
-    using Ocelot.Claims.Middleware;
     using Ocelot.DownstreamRouteFinder.Middleware;
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.Errors.Middleware;
     using Ocelot.Headers.Middleware;
     using Ocelot.Middleware.Authentication;
     using Ocelot.Middleware.Authorisation;
+    using Ocelot.Middleware.ClaimsBuilder;
     using Ocelot.Middleware.OutputCache;
     using Ocelot.QueryStrings.Middleware;
     using Ocelot.Request.Middleware;

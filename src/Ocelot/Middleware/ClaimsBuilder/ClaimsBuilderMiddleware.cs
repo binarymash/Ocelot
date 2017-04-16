@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 
-namespace Ocelot.Claims.Middleware
+namespace Ocelot.Middleware.ClaimsBuilder
 {
     public class ClaimsBuilderMiddleware : OcelotMiddleware
     {
