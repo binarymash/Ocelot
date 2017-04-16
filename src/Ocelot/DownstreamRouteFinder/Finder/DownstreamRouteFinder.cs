@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Configuration.Provider;
 using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Errors;
@@ -22,19 +21,26 @@ namespace Ocelot.DownstreamRouteFinder.Finder
             _urlPathPlaceholderNameAndValueFinder = urlPathPlaceholderNameAndValueFinder;
         }
 
-        public async Task<Response<DownstreamRoute>> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
+        public Response<DownstreamRoute> FindDownstreamRoute(string upstreamUrlPath, string upstreamHttpMethod)
         {
-            var configuration = await _configProvider.Get();
+            var configuration = _configProvider.Get();
 
-            var applicableReRoutes = configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase));
+            var applicableReRoutes = configuration.Data.ReRoutes.Where(r => string.Equals(r.UpstreamHttpMethod.Method, upstreamHttpMethod, StringComparison.CurrentCultureIgnoreCase));
 
             foreach (var reRoute in applicableReRoutes)
             {
+                if (upstreamUrlPath == reRoute.UpstreamTemplatePattern)
+                {
+                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamPathTemplate.Value);
+
+                    return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, reRoute));
+                }
+
                 var urlMatch = _urlMatcher.Match(upstreamUrlPath, reRoute.UpstreamTemplatePattern);
 
                 if (urlMatch.Data.Match)
                 {
-                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamTemplate);
+                    var templateVariableNameAndValues = _urlPathPlaceholderNameAndValueFinder.Find(upstreamUrlPath, reRoute.UpstreamPathTemplate.Value);
 
                     return new OkResponse<DownstreamRoute>(new DownstreamRoute(templateVariableNameAndValues.Data, reRoute));
                 }

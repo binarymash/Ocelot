@@ -30,7 +30,7 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
-
+ 
         [Fact]
         public void should_return_response_200_with_simple_url()
         {
@@ -44,8 +44,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
+ 
                         }
                     }
             };
@@ -72,8 +73,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
+ 
                         }
                     }
             };
@@ -100,8 +102,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost/",
                             DownstreamPort = 51879,
-                            UpstreamTemplate = "/",
+                            UpstreamPathTemplate = "/",
                             UpstreamHttpMethod = "Get",
+ 
                         }
                     }
             };
@@ -128,8 +131,9 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
-                            UpstreamTemplate = "/products/",
+                            UpstreamPathTemplate = "/products/",
                             UpstreamHttpMethod = "Get",
+ 
                         }
                     }
             };
@@ -156,7 +160,7 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
-                            UpstreamTemplate = "/products",
+                            UpstreamPathTemplate = "/products",
                             UpstreamHttpMethod = "Get",
                         }
                     }
@@ -177,17 +181,23 @@ namespace Ocelot.AcceptanceTests
             var configuration = new FileConfiguration
             {
                 ReRoutes = new List<FileReRoute>
+                {
+                    new FileReRoute
                     {
-                        new FileReRoute
+                        DownstreamPathTemplate = "/products",
+                        DownstreamScheme = "http",
+                        DownstreamHost = "localhost",
+                        DownstreamPort = 51879,
+                        UpstreamPathTemplate = "/products/{productId}",
+                        UpstreamHttpMethod = "Get",
+                        QoSOptions = new FileQoSOptions()
                         {
-                            DownstreamPathTemplate = "/products",
-                            DownstreamScheme = "http",
-                            DownstreamHost = "localhost",
-                            DownstreamPort = 51879,
-                            UpstreamTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get",
+                            ExceptionsAllowedBeforeBreaking = 3,
+                            DurationOfBreak = 5,
+                            TimeoutValue = 5000
                         }
                     }
+                }
             };
 
             this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879/products", 200, "Hello from Laura"))
@@ -211,8 +221,8 @@ namespace Ocelot.AcceptanceTests
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
-                            UpstreamTemplate = "/products/{productId}",
-                            UpstreamHttpMethod = "Get"
+                            UpstreamPathTemplate = "/products/{productId}",
+                            UpstreamHttpMethod = "Get",
                         }
                     }
             };
@@ -239,8 +249,8 @@ namespace Ocelot.AcceptanceTests
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
                             DownstreamScheme = "http",
-                            UpstreamTemplate = "/",
-                            UpstreamHttpMethod = "Post"
+                            UpstreamPathTemplate = "/",
+                            UpstreamHttpMethod = "Post", 
                         }
                     }
             };
@@ -264,7 +274,7 @@ namespace Ocelot.AcceptanceTests
                         new FileReRoute
                         {
                             DownstreamPathTemplate = "/newThing",
-                            UpstreamTemplate = "/newThing",
+                            UpstreamPathTemplate = "/newThing",
                             DownstreamScheme = "http",
                             DownstreamHost = "localhost",
                             DownstreamPort = 51879,
