@@ -2,14 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
-using Ocelot.Cache;
-using Ocelot.Cache.Middleware;
+using Ocelot.Middleware.OutputCache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.DownstreamRouteFinder;
@@ -20,7 +17,7 @@ using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Cache
+namespace Ocelot.UnitTests.Middleware.OutputCache
 {
     public class OutputCacheMiddlewareTests
     {

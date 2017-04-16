@@ -1,12 +1,12 @@
 ﻿using System;
 using CacheManager.Core;
 using Moq;
-using Ocelot.Cache;
+using Ocelot.Middleware.OutputCache;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Cache
+namespace Ocelot.UnitTests.Middleware.OutputCache
 {
     public class CacheManagerCacheTests
     {

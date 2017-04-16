@@ -1,7 +1,7 @@
 ﻿using System;
 using CacheManager.Core;
 
-namespace Ocelot.Cache
+namespace Ocelot.Middleware.OutputCache
 {
     public class OcelotCacheManagerCache<T> : IOcelotCache<T>
     {

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ocelot.Cache
+namespace Ocelot.Middleware.OutputCache
 {
     public interface IOcelotCache<T>
     {

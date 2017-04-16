@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Cache.Middleware
+namespace Ocelot.Middleware.OutputCache
 {
     public static class OutputCacheMiddlewareExtensions
     {

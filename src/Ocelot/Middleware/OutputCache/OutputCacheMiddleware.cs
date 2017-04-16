@@ -4,9 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 
-namespace Ocelot.Cache.Middleware
+namespace Ocelot.Middleware.OutputCache
 {
     public class OutputCacheMiddleware : OcelotMiddleware
     {
