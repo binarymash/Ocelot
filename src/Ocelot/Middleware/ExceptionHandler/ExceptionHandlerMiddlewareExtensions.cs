@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Errors.Middleware
+namespace Ocelot.Middleware.ExceptionHandler
 {
     public static class ExceptionHandlerMiddlewareExtensions
     {

@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 
-namespace Ocelot.Errors.Middleware
+namespace Ocelot.Middleware.ExceptionHandler
 {
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
-    public class ExceptionHandlerMiddleware 
+    public class ExceptionHandlerMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IOcelotLogger _logger;

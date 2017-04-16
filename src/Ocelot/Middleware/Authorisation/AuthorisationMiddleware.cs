@@ -2,8 +2,8 @@
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
-    using Errors;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Errors;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
