@@ -3,7 +3,7 @@ using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.DownstreamUrlCreator.UrlTemplateReplacer
+namespace Ocelot.Middleware.DownstreamUrlCreator.UrlTemplateReplacer
 {
     public interface IDownstreamPathPlaceholderReplacer
     {

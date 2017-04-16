@@ -1,15 +1,15 @@
 using System.Collections.Generic;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.DownstreamUrlCreator.UrlTemplateReplacer
+namespace Ocelot.UnitTests.Middleware.DownstreamUrlCreator.UrlTemplateReplacer
 {
     public class UpstreamUrlPathTemplateVariableReplacerTests
     {

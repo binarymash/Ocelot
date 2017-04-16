@@ -1,6 +1,6 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.DownstreamUrlCreator
+namespace Ocelot.Middleware.DownstreamUrlCreator
 {
     public class DownstreamPathNullOrEmptyError : Error
     {

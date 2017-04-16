@@ -7,19 +7,18 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamUrlCreator;
-using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware.DownstreamUrlCreator;
+using Ocelot.Middleware.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Responses;
 using Ocelot.Values;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.DownstreamUrlCreator
+namespace Ocelot.UnitTests.Middleware.DownstreamUrlCreator
 {
     public class DownstreamUrlCreatorMiddlewareTests : IDisposable
     {

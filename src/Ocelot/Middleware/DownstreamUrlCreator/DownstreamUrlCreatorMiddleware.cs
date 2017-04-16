@@ -1,11 +1,10 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
+using Ocelot.Middleware.DownstreamUrlCreator.UrlTemplateReplacer;
 
-namespace Ocelot.DownstreamUrlCreator.Middleware
+namespace Ocelot.Middleware.DownstreamUrlCreator
 {
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {

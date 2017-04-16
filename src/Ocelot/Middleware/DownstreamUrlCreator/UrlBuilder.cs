@@ -4,7 +4,7 @@ using Ocelot.Errors;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.DownstreamUrlCreator
+namespace Ocelot.Middleware.DownstreamUrlCreator
 {
     public class UrlBuilder : IUrlBuilder
     {

@@ -1,14 +1,12 @@
 ﻿using System;
-using Ocelot.Configuration;
-using Ocelot.DownstreamUrlCreator;
-using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Middleware.DownstreamUrlCreator;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.DownstreamUrlCreator
+namespace Ocelot.UnitTests.Middleware.DownstreamUrlCreator
 {
     public class UrlBuilderTests
     {

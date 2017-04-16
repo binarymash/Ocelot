@@ -1,7 +1,7 @@
 ﻿using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.DownstreamUrlCreator
+namespace Ocelot.Middleware.DownstreamUrlCreator
 {
     public interface IUrlBuilder
     {
