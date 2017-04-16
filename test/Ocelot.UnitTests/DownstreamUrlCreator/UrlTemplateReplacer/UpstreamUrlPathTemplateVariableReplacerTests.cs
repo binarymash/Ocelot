@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.DownstreamUrlCreator.UrlTemplateReplacer;
+using Ocelot.Middleware.DownstreamRouteFinder;
+using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;

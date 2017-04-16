@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.LoadBalancer.Middleware;
 using Ocelot.Logging;
+using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Responses;
 using Ocelot.Values;
 using TestStack.BDDfy;
@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod("Get")
                     .Build());
@@ -83,7 +83,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_load_balancer()
         {         
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod("Get")
                     .Build());
@@ -99,7 +99,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_least()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod("Get")
                     .Build());

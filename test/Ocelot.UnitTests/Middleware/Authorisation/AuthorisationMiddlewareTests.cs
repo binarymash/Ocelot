@@ -10,11 +10,11 @@
     using Microsoft.Extensions.DependencyInjection;
     using Moq;
     using Ocelot.Configuration.Builder;
-    using Ocelot.DownstreamRouteFinder;
-    using Ocelot.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware.Authorisation;
+    using Ocelot.Middleware.DownstreamRouteFinder;
+    using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
     using Ocelot.Responses;
     using TestStack.BDDfy;
     using Xunit;

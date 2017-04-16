@@ -1,7 +1,7 @@
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Columns;
 using BenchmarkDotNet.Configs;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 
 namespace Ocelot.Benchmarks
 {

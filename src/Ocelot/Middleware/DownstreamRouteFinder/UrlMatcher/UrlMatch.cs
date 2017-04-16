@@ -1,4 +1,4 @@
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher
 {
     public class UrlMatch
     {

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Ocelot.Values;
 

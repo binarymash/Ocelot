@@ -1,6 +1,6 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.DownstreamRouteFinder.Finder
+namespace Ocelot.Middleware.DownstreamRouteFinder.Finder
 {
     public class UnableToFindDownstreamRouteError : Error
     {

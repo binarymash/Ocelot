@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

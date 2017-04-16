@@ -1,15 +1,12 @@
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.DownstreamRouteFinder.Finder;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
+using Ocelot.Middleware.DownstreamRouteFinder.Finder;
 using Ocelot.Utilities;
 
-namespace Ocelot.DownstreamRouteFinder.Middleware
+namespace Ocelot.Middleware.DownstreamRouteFinder
 {
     public class DownstreamRouteFinderMiddleware : OcelotMiddleware
     {

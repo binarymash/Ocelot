@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Ocelot.Responses;
 
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher
 {
     public class UrlPathPlaceholderNameAndValueFinder : IUrlPathPlaceholderNameAndValueFinder
     {

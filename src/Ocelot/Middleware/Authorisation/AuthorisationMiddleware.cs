@@ -7,6 +7,7 @@
     using Ocelot.Infrastructure.RequestData;
     using Ocelot.Logging;
     using Ocelot.Middleware;
+    using Ocelot.Middleware.DownstreamRouteFinder;
     using Ocelot.Responses;
 
     public class AuthorisationMiddleware : OcelotMiddleware

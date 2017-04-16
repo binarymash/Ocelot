@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Ocelot.Responses;
 
-namespace Ocelot.DownstreamRouteFinder.UrlMatcher
+namespace Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher
 {
     public class RegExUrlMatcher : IUrlPathToUrlTemplateMatcher
     {

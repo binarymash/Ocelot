@@ -8,6 +8,7 @@ using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware.Authentication.Handler.Factory;
+using Ocelot.Middleware.DownstreamRouteFinder;
 
 namespace Ocelot.Middleware.Authentication
 {

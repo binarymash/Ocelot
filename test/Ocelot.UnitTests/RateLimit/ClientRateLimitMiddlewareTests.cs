@@ -1,26 +1,25 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Http;
-using Moq;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.RateLimit;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Logging;
 using System.IO;
-using Ocelot.RateLimit.Middleware;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.Responses;
-using Xunit;
-using TestStack.BDDfy;
-using Ocelot.Configuration.Builder;
-using Shouldly;
+using System.Net.Http;
+
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Ocelot.Configuration;
+using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.RequestData;
+using Ocelot.Logging;
+using Ocelot.RateLimit;
+using Ocelot.RateLimit.Middleware;
+using Ocelot.Middleware.DownstreamRouteFinder;
+using Ocelot.Responses;
+using TestStack.BDDfy;
+using Shouldly;
+using Xunit;
 
 namespace Ocelot.UnitTests.RateLimit
 {
@@ -69,7 +68,7 @@ namespace Ocelot.UnitTests.RateLimit
         [Fact]
         public void should_call_middleware_and_ratelimiting()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
                      new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>(), false, "", "", new Ocelot.Configuration.RateLimitRule("1s", TimeSpan.FromSeconds(100), 3), 429))
                      .WithUpstreamHttpMethod("Get")
@@ -86,7 +85,7 @@ namespace Ocelot.UnitTests.RateLimit
         [Fact]
         public void should_call_middleware_withWhitelistClient()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
                  new ReRouteBuilder().WithEnableRateLimiting(true).WithRateLimitOptions(
                      new Ocelot.Configuration.RateLimitOptions(true, "ClientId", new List<string>() { "ocelotclient2" }, false, "", "", new  RateLimitRule( "1s", TimeSpan.FromSeconds(100),3),429))
                      .WithUpstreamHttpMethod("Get")
