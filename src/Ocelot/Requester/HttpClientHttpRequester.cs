@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Ocelot.Logging;
+using Ocelot.Middleware.Request;
 using Ocelot.Responses;
 using Polly.CircuitBreaker;
 using Polly.Timeout;
@@ -20,7 +20,7 @@ namespace Ocelot.Requester
             _cacheHandlers = cacheHandlers;
         }
 
-        public async Task<Response<HttpResponseMessage>> GetResponse(Request.Request request)
+        public async Task<Response<HttpResponseMessage>> GetResponse(Request request)
         {
             IHttpClient httpClient = GetHttpClient(request);
             try
@@ -45,7 +45,7 @@ namespace Ocelot.Requester
 
         }
 
-        private IHttpClient GetHttpClient(Request.Request request)
+        private IHttpClient GetHttpClient(Request request)
         {
             var builder = new HttpClientBuilder();
             var cacheKey = GetCacheKey(request, builder);
@@ -58,7 +58,7 @@ namespace Ocelot.Requester
             return httpClient;
         }
 
-        private string GetCacheKey(Request.Request request, IHttpClientBuilder builder)
+        private string GetCacheKey(Request request, IHttpClientBuilder builder)
         {
             string baseUrl = $"{request.HttpRequestMessage.RequestUri.Scheme}://{request.HttpRequestMessage.RequestUri.Authority}";
 

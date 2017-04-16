@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Request.Middleware
+namespace Ocelot.Middleware.Request
 {
     public static class HttpRequestBuilderMiddlewareExtensions
     {

@@ -12,14 +12,14 @@ using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Request.Builder;
-using Ocelot.Request.Middleware;
+using Ocelot.Middleware.Request;
+using Ocelot.Middleware.Request.Builder;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Request
+namespace Ocelot.UnitTests.Middleware.Request
 {
     public class HttpRequestBuilderMiddlewareTests : IDisposable
     {
@@ -30,7 +30,7 @@ namespace Ocelot.UnitTests.Request
         private readonly TestServer _server;
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
-        private OkResponse<Ocelot.Request.Request> _request;
+        private OkResponse<Ocelot.Middleware.Request.Request> _request;
         private OkResponse<string> _downstreamUrl;
         private OkResponse<DownstreamRoute> _downstreamRoute;
 
@@ -76,7 +76,7 @@ namespace Ocelot.UnitTests.Request
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider())))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Middleware.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
@@ -97,9 +97,9 @@ namespace Ocelot.UnitTests.Request
                 .Returns(_downstreamRoute);
         }
 
-        private void GivenTheRequestBuilderReturns(Ocelot.Request.Request request)
+        private void GivenTheRequestBuilderReturns(Ocelot.Middleware.Request.Request request)
         {
-            _request = new OkResponse<Ocelot.Request.Request>(request);
+            _request = new OkResponse<Ocelot.Middleware.Request.Request>(request);
             _requestBuilder
                 .Setup(x => x.Build(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<Stream>(), It.IsAny<IHeaderDictionary>(), 
                 It.IsAny<QueryString>(), It.IsAny<string>(), It.IsAny<Ocelot.Middleware.RequestId.RequestId>(),It.IsAny<bool>(), It.IsAny<IQoSProvider>()))

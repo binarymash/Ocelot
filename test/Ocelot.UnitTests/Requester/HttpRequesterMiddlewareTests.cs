@@ -25,7 +25,7 @@ namespace Ocelot.UnitTests.Requester
         private readonly HttpClient _client;
         private HttpResponseMessage _result;
         private OkResponse<HttpResponseMessage> _response;
-        private OkResponse<Ocelot.Request.Request> _request;
+        private OkResponse<Ocelot.Middleware.Request.Request> _request;
 
         public HttpRequesterMiddlewareTests()
         {
@@ -57,7 +57,7 @@ namespace Ocelot.UnitTests.Requester
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            this.Given(x => x.GivenTheRequestIs(new Ocelot.Request.Request(new HttpRequestMessage(),true, new NoQoSProvider())))
+            this.Given(x => x.GivenTheRequestIs(new Ocelot.Middleware.Request.Request(new HttpRequestMessage(),true, new NoQoSProvider())))
                 .And(x => x.GivenTheRequesterReturns(new HttpResponseMessage()))
                 .And(x => x.GivenTheScopedRepoReturns())
                 .When(x => x.WhenICallTheMiddleware())
@@ -69,7 +69,7 @@ namespace Ocelot.UnitTests.Requester
         {
             _response = new OkResponse<HttpResponseMessage>(response);
             _requester
-                .Setup(x => x.GetResponse(It.IsAny<Ocelot.Request.Request>()))
+                .Setup(x => x.GetResponse(It.IsAny<Ocelot.Middleware.Request.Request>()))
                 .ReturnsAsync(_response);
         }
 
@@ -91,11 +91,11 @@ namespace Ocelot.UnitTests.Requester
             _result = _client.GetAsync(_url).Result;
         }
 
-        private void GivenTheRequestIs(Ocelot.Request.Request request)
+        private void GivenTheRequestIs(Ocelot.Middleware.Request.Request request)
         {
-            _request = new OkResponse<Ocelot.Request.Request>(request);
+            _request = new OkResponse<Ocelot.Middleware.Request.Request>(request);
             _scopedRepository
-                .Setup(x => x.Get<Ocelot.Request.Request>(It.IsAny<string>()))
+                .Setup(x => x.Get<Ocelot.Middleware.Request.Request>(It.IsAny<string>()))
                 .Returns(_request);
         }
 

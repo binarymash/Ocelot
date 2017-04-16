@@ -1,7 +1,7 @@
 ﻿using System.Net.Http;
 using Ocelot.Requester.QoS;
 
-namespace Ocelot.Request
+namespace Ocelot.Middleware.Request
 {
     public class Request
     {

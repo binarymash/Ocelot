@@ -30,7 +30,7 @@ using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Middleware.OutputCache;
 using Ocelot.Middleware.QueryStrings;
 using Ocelot.Middleware.RateLimit;
-using Ocelot.Request.Builder;
+using Ocelot.Middleware.Request.Builder;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
 using Ocelot.Responder;

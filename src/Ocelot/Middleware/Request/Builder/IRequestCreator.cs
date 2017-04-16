@@ -1,11 +1,10 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Middleware.RequestId;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 
-namespace Ocelot.Request.Builder
+namespace Ocelot.Middleware.Request.Builder
 {
     public interface IRequestCreator
     {
@@ -15,7 +14,7 @@ namespace Ocelot.Request.Builder
             IHeaderDictionary headers,
             QueryString queryString,
             string contentType,
-            RequestId requestId,
+            RequestId.RequestId requestId,
             bool isQos,
             IQoSProvider qosProvider);
     }

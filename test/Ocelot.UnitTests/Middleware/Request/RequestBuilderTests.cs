@@ -1,16 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Internal;
-using Ocelot.Request.Builder;
+using Ocelot.Middleware.Request.Builder;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using Ocelot.Configuration;
 using Ocelot.Requester.QoS;
 
 namespace Ocelot.UnitTests.Request
@@ -25,7 +22,7 @@ namespace Ocelot.UnitTests.Request
         private QueryString _query;
         private string _contentType;
         private readonly IRequestCreator _requestCreator;
-        private Response<Ocelot.Request.Request> _result;
+        private Response<Ocelot.Middleware.Request.Request> _result;
         private Ocelot.Middleware.RequestId.RequestId _requestId;
         private bool _isQos;
         private IQoSProvider _qoSProvider;

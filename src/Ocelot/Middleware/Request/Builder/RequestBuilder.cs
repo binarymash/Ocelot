@@ -7,10 +7,9 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Middleware.RequestId;
 using Ocelot.Requester.QoS;
 
-namespace Ocelot.Request.Builder
+namespace Ocelot.Middleware.Request.Builder
 {
     internal sealed class RequestBuilder
     {
@@ -20,7 +19,7 @@ namespace Ocelot.Request.Builder
         private Stream _content;
         private string _contentType;
         private IHeaderDictionary _headers;
-        private RequestId _requestId;
+        private RequestId.RequestId _requestId;
         private readonly string[] _unsupportedHeaders = {"host"};
         private bool _isQos;
         private IQoSProvider _qoSProvider;
@@ -61,7 +60,7 @@ namespace Ocelot.Request.Builder
             return this;
         }
 
-        public RequestBuilder WithRequestId(RequestId requestId)
+        public RequestBuilder WithRequestId(RequestId.RequestId requestId)
         {
             _requestId = requestId;
             return this;
@@ -144,18 +143,18 @@ namespace Ocelot.Request.Builder
             return !_unsupportedHeaders.Contains(header.Key.ToLower());
         }
 
-        private void AddRequestIdHeader(RequestId requestId, HttpRequestMessage httpRequestMessage)
+        private void AddRequestIdHeader(RequestId.RequestId requestId, HttpRequestMessage httpRequestMessage)
         {
             httpRequestMessage.Headers.Add(requestId.RequestIdKey, requestId.RequestIdValue);
         }
 
-        private bool RequestIdInHeaders(RequestId requestId, HttpRequestHeaders headers)
+        private bool RequestIdInHeaders(RequestId.RequestId requestId, HttpRequestHeaders headers)
         {
             IEnumerable<string> value;
             return headers.TryGetValues(requestId.RequestIdKey, out value);
         }
 
-        private bool ShouldAddRequestId(RequestId requestId, HttpRequestHeaders headers)
+        private bool ShouldAddRequestId(RequestId.RequestId requestId, HttpRequestHeaders headers)
         {
             return !string.IsNullOrEmpty(requestId?.RequestIdKey)
                    && !string.IsNullOrEmpty(requestId.RequestIdValue)
