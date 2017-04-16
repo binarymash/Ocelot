@@ -2,7 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.ServiceDiscovery;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.Middleware.LoadBalancing.LoadBalancers
 {
     public class LoadBalancerFactory : ILoadBalancerFactory
     {

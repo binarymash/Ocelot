@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.LoadBalancer.Middleware
+namespace Ocelot.Middleware.LoadBalancing
 {
  public static class LoadBalancingMiddlewareExtensions
     {

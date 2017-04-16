@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Ocelot.Configuration;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Responses;
 using Polly;

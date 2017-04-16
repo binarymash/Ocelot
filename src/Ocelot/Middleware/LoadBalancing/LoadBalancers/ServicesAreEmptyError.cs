@@ -1,6 +1,6 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.Middleware.LoadBalancing.LoadBalancers
 {
     public class ServicesAreEmptyError : Error
     {

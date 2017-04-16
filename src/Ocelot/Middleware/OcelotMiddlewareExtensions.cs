@@ -10,7 +10,6 @@
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Setter;
-    using Ocelot.LoadBalancer.Middleware;
     using Ocelot.DownstreamUrlCreator.Middleware;
     using Ocelot.Errors.Middleware;
     using Ocelot.Headers.Middleware;
@@ -19,6 +18,7 @@
     using Ocelot.Middleware.ClaimsBuilder;
     using Ocelot.Middleware.DownstreamRouteFinder;
     using Ocelot.Middleware.OutputCache;
+    using Ocelot.Middleware.LoadBalancing;
     using Ocelot.Middleware.RateLimit;
     using Ocelot.QueryStrings.Middleware;
     using Ocelot.Request.Middleware;

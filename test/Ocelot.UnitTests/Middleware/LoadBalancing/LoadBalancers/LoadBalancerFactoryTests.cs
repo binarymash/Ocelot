@@ -1,13 +1,13 @@
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.ServiceDiscovery;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.LoadBalancer
+namespace Ocelot.UnitTests.Middleware.LoadBalancing.LoadBalancers
 {
     public class LoadBalancerFactoryTests
     {

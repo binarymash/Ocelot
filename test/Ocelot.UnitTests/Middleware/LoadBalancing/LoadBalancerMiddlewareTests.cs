@@ -8,8 +8,8 @@ using Moq;
 using Ocelot.Configuration.Builder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer.LoadBalancers;
-using Ocelot.LoadBalancer.Middleware;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
+using Ocelot.Middleware.LoadBalancing;
 using Ocelot.Logging;
 using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Responses;
@@ -17,7 +17,7 @@ using Ocelot.Values;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.LoadBalancer
+namespace Ocelot.UnitTests.Middleware.LoadBalancing
 {
     public class LoadBalancerMiddlewareTests
     {

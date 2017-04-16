@@ -2,17 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
-using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
-using Ocelot.Utilities;
 
 namespace Ocelot.Configuration.Creator
 {

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Ocelot.Responses;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.Middleware.LoadBalancing.LoadBalancers
 {
     public class LoadBalancerHouse : ILoadBalancerHouse
     {

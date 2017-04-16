@@ -2,12 +2,11 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 using Ocelot.QueryStrings.Middleware;
 
-namespace Ocelot.LoadBalancer.Middleware
+namespace Ocelot.Middleware.LoadBalancing
 {
     public class LoadBalancingMiddleware : OcelotMiddleware
     {

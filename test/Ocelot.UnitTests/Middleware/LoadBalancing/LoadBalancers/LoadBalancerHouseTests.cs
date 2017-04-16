@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Responses;
 using Ocelot.Values;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.LoadBalancer
+namespace Ocelot.UnitTests.Middleware.LoadBalancing.LoadBalancers
 {
     public class LoadBalancerHouseTests
     {

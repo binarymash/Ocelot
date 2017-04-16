@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using Ocelot.Responses;
 using Ocelot.Values;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.Middleware.LoadBalancing.LoadBalancers
 {
     public interface ILoadBalancer
     {

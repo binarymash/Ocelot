@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
 using Ocelot.Configuration;
@@ -7,8 +6,8 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;

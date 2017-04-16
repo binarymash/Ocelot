@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Ocelot.Configuration;
 
-namespace Ocelot.LoadBalancer.LoadBalancers
+namespace Ocelot.Middleware.LoadBalancing.LoadBalancers
 {
     public interface ILoadBalancerFactory
     {
