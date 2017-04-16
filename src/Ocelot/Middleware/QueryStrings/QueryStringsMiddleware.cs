@@ -3,17 +3,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 
-namespace Ocelot.QueryStrings.Middleware
+namespace Ocelot.Middleware.QueryStrings
 {
-    public class QueryStringBuilderMiddleware : OcelotMiddleware
+    public class QueryStringsMiddleware : OcelotMiddleware
     {
         private readonly RequestDelegate _next;
         private readonly IAddQueriesToRequest _addQueriesToRequest;
         private readonly IOcelotLogger _logger;
 
-        public QueryStringBuilderMiddleware(RequestDelegate next,
+        public QueryStringsMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository,
             IAddQueriesToRequest addQueriesToRequest) 
@@ -21,7 +20,7 @@ namespace Ocelot.QueryStrings.Middleware
         {
             _next = next;
             _addQueriesToRequest = addQueriesToRequest;
-            _logger = loggerFactory.CreateLogger<QueryStringBuilderMiddleware>();
+            _logger = loggerFactory.CreateLogger<QueryStringsMiddleware>();
         }
 
         public async Task Invoke(HttpContext context)

@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.QueryStrings.Middleware
+namespace Ocelot.Middleware.QueryStrings
 {
-    public static class QueryStringBuilderMiddlewareExtensions
+    public static class QueryStringsMiddlewareExtensions
     {
         public static IApplicationBuilder UseQueryStringBuilderMiddleware(this IApplicationBuilder builder)
         {
-            return builder.UseMiddleware<QueryStringBuilderMiddleware>();
+            return builder.UseMiddleware<QueryStringsMiddleware>();
         }
     }
 }

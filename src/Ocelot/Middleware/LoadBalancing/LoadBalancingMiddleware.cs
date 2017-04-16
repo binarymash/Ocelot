@@ -2,9 +2,8 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
-using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Logging;
-using Ocelot.QueryStrings.Middleware;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 
 namespace Ocelot.Middleware.LoadBalancing
 {
@@ -21,7 +20,7 @@ namespace Ocelot.Middleware.LoadBalancing
             : base(requestScopedDataRepository)
         {
             _next = next;
-            _logger = loggerFactory.CreateLogger<QueryStringBuilderMiddleware>();
+            _logger = loggerFactory.CreateLogger<LoadBalancingMiddleware>();
             _loadBalancerHouse = loadBalancerHouse;
         }
 

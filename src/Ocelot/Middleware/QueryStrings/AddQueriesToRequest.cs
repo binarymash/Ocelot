@@ -5,7 +5,7 @@ using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 
-namespace Ocelot.QueryStrings
+namespace Ocelot.Middleware.QueryStrings
 {
     public class AddQueriesToRequest : IAddQueriesToRequest
     {

@@ -19,8 +19,8 @@
     using Ocelot.Middleware.DownstreamRouteFinder;
     using Ocelot.Middleware.OutputCache;
     using Ocelot.Middleware.LoadBalancing;
+    using Ocelot.Middleware.QueryStrings;
     using Ocelot.Middleware.RateLimit;
-    using Ocelot.QueryStrings.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.Requester.Middleware;
     using Ocelot.RequestId.Middleware;

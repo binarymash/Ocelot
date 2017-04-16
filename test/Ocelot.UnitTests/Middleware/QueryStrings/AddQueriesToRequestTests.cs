@@ -6,13 +6,13 @@ using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.Claims.Parser;
-using Ocelot.QueryStrings;
+using Ocelot.Middleware.QueryStrings;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.QueryStrings
+namespace Ocelot.UnitTests.Middleware.QueryStrings
 {
     public class AddQueriesToRequestTests
     {
