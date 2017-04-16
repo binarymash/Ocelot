@@ -1,13 +1,13 @@
-﻿using System.Collections.Generic;
-using System.Security.Claims;
-using Ocelot.Authorisation;
-using Ocelot.Responses;
-using Shouldly;
-using TestStack.BDDfy;
-using Xunit;
-
-namespace Ocelot.UnitTests.Authorization
+﻿namespace Ocelot.UnitTests.Middleware.Authorization
 {
+    using System.Collections.Generic;
+    using System.Security.Claims;
+    using Ocelot.Middleware.Authorisation;
+    using Ocelot.Responses;
+    using Shouldly;
+    using TestStack.BDDfy;
+    using Xunit;
+
     using Ocelot.Infrastructure.Claims.Parser;
 
     public class ClaimsAuthoriserTests

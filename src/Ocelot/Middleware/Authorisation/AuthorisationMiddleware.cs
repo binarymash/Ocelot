@@ -1,14 +1,13 @@
-﻿using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Responses;
-
-namespace Ocelot.Authorisation.Middleware
+﻿namespace Ocelot.Middleware.Authorisation
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
     using Errors;
     using Microsoft.AspNetCore.Http;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
     using Ocelot.Middleware;
+    using Ocelot.Responses;
 
     public class AuthorisationMiddleware : OcelotMiddleware
     {

@@ -3,7 +3,7 @@ using System.Security.Claims;
 using Ocelot.Errors;
 using Ocelot.Responses;
 
-namespace Ocelot.Authorisation
+namespace Ocelot.Middleware.Authorisation
 {
     using Infrastructure.Claims.Parser;
 

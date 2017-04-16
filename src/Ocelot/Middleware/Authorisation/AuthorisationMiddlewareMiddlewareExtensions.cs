@@ -1,4 +1,4 @@
-namespace Ocelot.Authorisation.Middleware
+namespace Ocelot.Middleware.Authorisation
 {
     using Microsoft.AspNetCore.Builder;
 

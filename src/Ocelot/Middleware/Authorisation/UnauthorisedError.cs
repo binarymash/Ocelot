@@ -1,6 +1,6 @@
 ﻿using Ocelot.Errors;
 
-namespace Ocelot.Authorisation
+namespace Ocelot.Middleware.Authorisation
 {
     public class UnauthorisedError : Error
     {
