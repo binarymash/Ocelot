@@ -1,10 +1,7 @@
 ﻿using Microsoft.Extensions.Caching.Memory;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.Middleware.RateLimit
 {
     public class MemoryCacheRateLimitCounterHandler : IRateLimitCounterHandler
     {

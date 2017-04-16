@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.Middleware.RateLimit
 {
     public interface IRateLimitCounterHandler
     {

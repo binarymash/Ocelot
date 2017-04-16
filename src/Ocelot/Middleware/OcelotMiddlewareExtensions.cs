@@ -19,12 +19,12 @@
     using Ocelot.Middleware.ClaimsBuilder;
     using Ocelot.Middleware.DownstreamRouteFinder;
     using Ocelot.Middleware.OutputCache;
+    using Ocelot.Middleware.RateLimit;
     using Ocelot.QueryStrings.Middleware;
     using Ocelot.Request.Middleware;
     using Ocelot.Requester.Middleware;
     using Ocelot.RequestId.Middleware;
     using Ocelot.Responder.Middleware;
-    using Ocelot.RateLimit.Middleware;
 
 
     public static class OcelotMiddlewareExtensions

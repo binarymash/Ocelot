@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Logging;
 using Ocelot.Configuration;
 
-namespace Ocelot.RateLimit.Middleware
+namespace Ocelot.Middleware.RateLimit
 {
     public class ClientRateLimitMiddleware : OcelotMiddleware
     {

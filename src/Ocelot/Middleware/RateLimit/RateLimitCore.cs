@@ -1,14 +1,11 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Ocelot.Configuration;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace Ocelot.RateLimit
+namespace Ocelot.Middleware.RateLimit
 {
     public class RateLimitCore
     {
