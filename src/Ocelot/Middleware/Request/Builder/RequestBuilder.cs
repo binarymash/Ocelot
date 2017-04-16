@@ -7,7 +7,7 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester.QoS;
 
 namespace Ocelot.Middleware.Request.Builder
 {

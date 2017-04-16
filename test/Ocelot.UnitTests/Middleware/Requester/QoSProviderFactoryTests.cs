@@ -2,7 +2,7 @@
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Logging;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester.QoS;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;

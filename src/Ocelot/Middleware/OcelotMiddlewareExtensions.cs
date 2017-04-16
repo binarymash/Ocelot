@@ -23,7 +23,7 @@
     using Ocelot.Middleware.RateLimit;
     using Ocelot.Middleware.RequestId;
     using Ocelot.Middleware.Request;
-    using Ocelot.Requester.Middleware;
+    using Ocelot.Middleware.Requester;
     using Ocelot.Middleware.Responder;
 
 

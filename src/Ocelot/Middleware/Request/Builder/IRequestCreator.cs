@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester.QoS;
 using Ocelot.Responses;
 
 namespace Ocelot.Middleware.Request.Builder

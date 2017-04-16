@@ -1,19 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Ocelot.Logging;
-using Ocelot.Requester.QoS;
 
-namespace Ocelot.Requester
+namespace Ocelot.Middleware.Requester
 {
     internal class HttpClientBuilder : IHttpClientBuilder
     {
         private readonly Dictionary<int, Func<DelegatingHandler>> _handlers = new Dictionary<int, Func<DelegatingHandler>>();
 
-        public  IHttpClientBuilder WithQos(IQoSProvider qosProvider, IOcelotLogger logger)
+        public  IHttpClientBuilder WithQos(QoS.IQoSProvider qosProvider, IOcelotLogger logger)
         {
             _handlers.Add(5000, () => new PollyCircuitBreakingDelegatingHandler(qosProvider, logger));
 

@@ -6,9 +6,9 @@ using Microsoft.Extensions.Options;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
-using Ocelot.Middleware.LoadBalancing.LoadBalancers;
 using Ocelot.Logging;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.LoadBalancing.LoadBalancers;
+using Ocelot.Middleware.Requester.QoS;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Creator
@@ -24,7 +24,7 @@ namespace Ocelot.Configuration.Creator
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
         private readonly IQoSProviderFactory _qoSProviderFactory;
-        private readonly IQosProviderHouse _qosProviderHouse;
+        private readonly IQoSProviderHouse _qosProviderHouse;
         private readonly IClaimsToThingCreator _claimsToThingCreator;
         private readonly IAuthenticationOptionsCreator _authOptionsCreator;
         private IUpstreamTemplatePatternCreator _upstreamTemplatePatternCreator;
@@ -41,7 +41,7 @@ namespace Ocelot.Configuration.Creator
             ILoadBalancerFactory loadBalancerFactory,
             ILoadBalancerHouse loadBalancerHouse, 
             IQoSProviderFactory qoSProviderFactory, 
-            IQosProviderHouse qosProviderHouse,
+            IQoSProviderHouse qosProviderHouse,
             IClaimsToThingCreator claimsToThingCreator,
             IAuthenticationOptionsCreator authOptionsCreator,
             IUpstreamTemplatePatternCreator upstreamTemplatePatternCreator,

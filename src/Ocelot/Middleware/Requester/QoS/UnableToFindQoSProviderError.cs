@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Ocelot.Errors;
+﻿using Ocelot.Errors;
 
-namespace Ocelot.Requester.QoS
+namespace Ocelot.Middleware.Requester.QoS
 {
     public class UnableToFindQoSProviderError : Error
     {

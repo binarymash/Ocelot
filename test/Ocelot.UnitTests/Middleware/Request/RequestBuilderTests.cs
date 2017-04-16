@@ -4,11 +4,11 @@ using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Middleware.Request.Builder;
+using Ocelot.Middleware.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
-using Ocelot.Requester.QoS;
 
 namespace Ocelot.UnitTests.Request
 {

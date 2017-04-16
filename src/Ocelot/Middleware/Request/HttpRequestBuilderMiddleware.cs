@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware.Request.Builder;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester.QoS;
 
 namespace Ocelot.Middleware.Request
 {
@@ -12,13 +12,13 @@ namespace Ocelot.Middleware.Request
         private readonly RequestDelegate _next;
         private readonly IRequestCreator _requestCreator;
         private readonly IOcelotLogger _logger;
-        private readonly IQosProviderHouse _qosProviderHouse;
+        private readonly IQoSProviderHouse _qosProviderHouse;
 
         public HttpRequestBuilderMiddleware(RequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
             IRequestScopedDataRepository requestScopedDataRepository, 
             IRequestCreator requestCreator, 
-            IQosProviderHouse qosProviderHouse)
+            IQoSProviderHouse qosProviderHouse)
             :base(requestScopedDataRepository)
         {
             _next = next;

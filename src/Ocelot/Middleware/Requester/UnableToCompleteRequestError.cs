@@ -1,7 +1,7 @@
 ﻿using System;
 using Ocelot.Errors;
 
-namespace Ocelot.Requester
+namespace Ocelot.Middleware.Requester
 {
     public class UnableToCompleteRequestError : Error
     {

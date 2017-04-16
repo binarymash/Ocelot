@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 
-namespace Ocelot.Requester.Middleware
+namespace Ocelot.Middleware.Requester
 {
     public static class HttpRequesterMiddlewareExtensions
     {

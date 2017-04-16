@@ -1,4 +1,4 @@
-﻿using Ocelot.Requester.QoS;
+﻿using Ocelot.Middleware.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

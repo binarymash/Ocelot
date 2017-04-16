@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Ocelot.Errors;
 using Ocelot.Middleware;
-using Ocelot.Requester;
+using Ocelot.Middleware.Requester;
 using Ocelot.Middleware.Responder;
 using Shouldly;
 using TestStack.BDDfy;

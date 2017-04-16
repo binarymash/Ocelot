@@ -14,7 +14,7 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware.Request;
 using Ocelot.Middleware.Request.Builder;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester.QoS;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
@@ -25,7 +25,7 @@ namespace Ocelot.UnitTests.Middleware.Request
     {
         private readonly Mock<IRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
-        private readonly Mock<IQosProviderHouse> _qosProviderHouse;
+        private readonly Mock<IQoSProviderHouse> _qosProviderHouse;
         private readonly string _url;
         private readonly TestServer _server;
         private readonly HttpClient _client;
@@ -37,7 +37,7 @@ namespace Ocelot.UnitTests.Middleware.Request
         public HttpRequestBuilderMiddlewareTests()
         {
             _url = "http://localhost:51879";
-            _qosProviderHouse = new Mock<IQosProviderHouse>();
+            _qosProviderHouse = new Mock<IQoSProviderHouse>();
             _requestBuilder = new Mock<IRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
             var builder = new WebHostBuilder()

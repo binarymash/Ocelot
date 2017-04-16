@@ -1,5 +1,5 @@
 ﻿using System.Net.Http;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester.QoS;
 
 namespace Ocelot.Middleware.Request
 {

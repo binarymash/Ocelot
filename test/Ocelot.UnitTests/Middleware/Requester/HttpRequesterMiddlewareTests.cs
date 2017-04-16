@@ -7,14 +7,13 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Requester;
-using Ocelot.Requester.Middleware;
-using Ocelot.Requester.QoS;
+using Ocelot.Middleware.Requester;
+using Ocelot.Middleware.Requester.QoS;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Requester
+namespace Ocelot.UnitTests.Middleware.Requester
 {
     public class HttpRequesterMiddlewareTests : IDisposable
     {
