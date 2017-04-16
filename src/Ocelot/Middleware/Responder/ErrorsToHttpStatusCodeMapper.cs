@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Ocelot.Errors;
 
-namespace Ocelot.Responder
+namespace Ocelot.Middleware.Responder
 {
     public class ErrorsToHttpStatusCodeMapper : IErrorsToHttpStatusCodeMapper
     {

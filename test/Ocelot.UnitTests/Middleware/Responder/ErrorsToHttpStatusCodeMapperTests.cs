@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using Ocelot.Errors;
 using Ocelot.Middleware;
 using Ocelot.Requester;
-using Ocelot.Responder;
+using Ocelot.Middleware.Responder;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Responder
+namespace Ocelot.UnitTests.Middleware.Responder
 {
     public class ErrorsToHttpStatusCodeMapperTests
     {

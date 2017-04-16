@@ -24,7 +24,7 @@
     using Ocelot.Middleware.RequestId;
     using Ocelot.Middleware.Request;
     using Ocelot.Requester.Middleware;
-    using Ocelot.Responder.Middleware;
+    using Ocelot.Middleware.Responder;
 
 
     public static class OcelotMiddlewareExtensions

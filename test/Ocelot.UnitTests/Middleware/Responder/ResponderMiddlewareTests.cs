@@ -2,15 +2,12 @@
 using System.IO;
 using System.Net.Http;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Responder;
-using Ocelot.Responder.Middleware;
+using Ocelot.Middleware.Responder;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;

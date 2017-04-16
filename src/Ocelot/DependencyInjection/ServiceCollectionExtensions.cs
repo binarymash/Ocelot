@@ -33,7 +33,7 @@ using Ocelot.Middleware.RateLimit;
 using Ocelot.Middleware.Request.Builder;
 using Ocelot.Requester;
 using Ocelot.Requester.QoS;
-using Ocelot.Responder;
+using Ocelot.Middleware.Responder;
 using Ocelot.ServiceDiscovery;
 using System;
 using System.Collections.Generic;

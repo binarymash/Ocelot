@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Ocelot.Responder
+namespace Ocelot.Middleware.Responder
 {
     public interface IHttpResponder
     {

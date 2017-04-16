@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Ocelot.Middleware.Headers;
 
-namespace Ocelot.Responder
+namespace Ocelot.Middleware.Responder
 {
     using System.Collections.Generic;
 
