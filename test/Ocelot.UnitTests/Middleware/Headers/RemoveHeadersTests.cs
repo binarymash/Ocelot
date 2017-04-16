@@ -5,17 +5,17 @@ using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Middleware.Headers
 {
     public class RemoveHeadersTests
     {
         private HttpResponseHeaders _headers;
-        private readonly Ocelot.Headers.RemoveOutputHeaders _removeOutputHeaders;
+        private readonly Ocelot.Middleware.Headers.RemoveOutputHeaders _removeOutputHeaders;
         private Response _result;
 
         public RemoveHeadersTests()
         {
-            _removeOutputHeaders = new Ocelot.Headers.RemoveOutputHeaders();
+            _removeOutputHeaders = new Ocelot.Middleware.Headers.RemoveOutputHeaders();
         }
 
         [Fact]

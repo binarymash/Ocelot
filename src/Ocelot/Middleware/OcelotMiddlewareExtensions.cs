@@ -10,15 +10,15 @@
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Setter;
-    using Ocelot.Headers.Middleware;
     using Ocelot.Middleware.Authentication;
     using Ocelot.Middleware.Authorisation;
     using Ocelot.Middleware.ClaimsBuilder;
     using Ocelot.Middleware.DownstreamRouteFinder;
     using Ocelot.Middleware.DownstreamUrlCreator;
     using Ocelot.Middleware.ExceptionHandler;
-    using Ocelot.Middleware.OutputCache;
+    using Ocelot.Middleware.Headers;
     using Ocelot.Middleware.LoadBalancing;
+    using Ocelot.Middleware.OutputCache;
     using Ocelot.Middleware.QueryStrings;
     using Ocelot.Middleware.RateLimit;
     using Ocelot.Middleware.RequestId;

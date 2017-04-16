@@ -9,17 +9,16 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
-using Ocelot.Headers;
-using Ocelot.Headers.Middleware;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware.DownstreamRouteFinder;
 using Ocelot.Middleware.DownstreamRouteFinder.UrlMatcher;
+using Ocelot.Middleware.Headers;
 using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Middleware.Headers
 {
     public class HttpRequestHeadersBuilderMiddlewareTests : IDisposable
     {

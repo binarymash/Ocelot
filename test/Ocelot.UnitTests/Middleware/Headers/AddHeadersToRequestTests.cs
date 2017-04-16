@@ -6,14 +6,14 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Errors;
-using Ocelot.Headers;
 using Ocelot.Infrastructure.Claims.Parser;
+using Ocelot.Middleware.Headers;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
-namespace Ocelot.UnitTests.Headers
+namespace Ocelot.UnitTests.Middleware.Headers
 {
     public class AddHeadersToRequestTests
     {

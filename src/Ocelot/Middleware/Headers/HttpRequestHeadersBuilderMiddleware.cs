@@ -3,9 +3,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
-using Ocelot.Middleware;
 
-namespace Ocelot.Headers.Middleware
+namespace Ocelot.Middleware.Headers
 {
     public class HttpRequestHeadersBuilderMiddleware : OcelotMiddleware
     {

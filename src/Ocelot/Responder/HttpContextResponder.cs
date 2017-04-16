@@ -5,8 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Ocelot.Headers;
-using Ocelot.Responses;
+using Ocelot.Middleware.Headers;
 
 namespace Ocelot.Responder
 {

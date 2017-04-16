@@ -6,7 +6,7 @@ using Ocelot.Configuration;
 using Ocelot.Infrastructure.Claims.Parser;
 using Ocelot.Responses;
 
-namespace Ocelot.Headers
+namespace Ocelot.Middleware.Headers
 {
     public class AddHeadersToRequest : IAddHeadersToRequest
     {

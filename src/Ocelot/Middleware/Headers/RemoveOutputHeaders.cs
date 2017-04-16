@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
 using Ocelot.Responses;
 
-namespace Ocelot.Headers
+namespace Ocelot.Middleware.Headers
 {
     public class RemoveOutputHeaders : IRemoveOutputHeaders
     {
