@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
-using Ocelot.Errors;
 using Ocelot.Responses;
 
 namespace Ocelot.Infrastructure.RequestData

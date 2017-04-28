@@ -4,7 +4,7 @@ using Ocelot.Configuration;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.Provider;
 using Ocelot.Configuration.Repository;
-using Ocelot.Errors;
+using Ocelot.Middleware.GlobalExceptionHandler;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

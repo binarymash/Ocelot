@@ -6,7 +6,6 @@ using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Repository;
 using Ocelot.Configuration.Setter;
-using Ocelot.Errors;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

@@ -3,9 +3,9 @@ using System.Text;
 using System.Threading.Tasks;
 using Consul;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Ocelot.Responses;
 using Ocelot.ServiceDiscovery;
+using Ocelot.Caching;
 
 namespace Ocelot.Configuration.Repository
 {
@@ -14,9 +14,9 @@ namespace Ocelot.Configuration.Repository
         private readonly ConsulClient _consul;
         private ConsulRegistryConfiguration _configuration;
         private string _ocelotConfiguration = "OcelotConfiguration";
-        private Cache.IOcelotCache<IOcelotConfiguration> _cache;
+        private IOcelotCache<IOcelotConfiguration> _cache;
 
-        public ConsulOcelotConfigurationRepository(ConsulRegistryConfiguration consulRegistryConfiguration, Cache.IOcelotCache<IOcelotConfiguration> cache)
+        public ConsulOcelotConfigurationRepository(ConsulRegistryConfiguration consulRegistryConfiguration, IOcelotCache<IOcelotConfiguration> cache)
         {
             var consulHost = string.IsNullOrEmpty(consulRegistryConfiguration?.HostName) ? "localhost" : consulRegistryConfiguration.HostName;
             var consulPort = consulRegistryConfiguration?.Port ?? 8500;

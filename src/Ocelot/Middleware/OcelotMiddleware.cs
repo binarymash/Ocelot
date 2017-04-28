@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
+using Ocelot.Middleware.DownstreamRouteFinder;
+using Ocelot.Responses;
 
 namespace Ocelot.Middleware
 {

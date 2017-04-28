@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Ocelot.Authentication.Handler;
 using Ocelot.Configuration.File;
-using Ocelot.Errors;
+using Ocelot.Middleware.Authentication.Handler;
+using Ocelot.Middleware.GlobalExceptionHandler;
 using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Validator

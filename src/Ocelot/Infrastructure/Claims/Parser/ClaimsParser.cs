@@ -1,11 +1,10 @@
-﻿namespace Ocelot.Infrastructure.Claims.Parser
-{
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Security.Claims;
-    using Errors;
-    using Responses;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
+using Ocelot.Responses;
 
+namespace Ocelot.Infrastructure.Claims.Parser
+{
     public class ClaimsParser : IClaimsParser
     {
         public Response<string> GetValue(IEnumerable<Claim> claims, string key, string delimiter, int index)

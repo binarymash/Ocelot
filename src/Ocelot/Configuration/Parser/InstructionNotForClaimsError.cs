@@ -1,4 +1,5 @@
-﻿using Ocelot.Errors;
+﻿using Ocelot.Middleware.GlobalExceptionHandler;
+using Ocelot.Responses;
 
 namespace Ocelot.Configuration.Parser
 {

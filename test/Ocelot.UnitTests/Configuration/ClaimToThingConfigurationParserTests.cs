@@ -2,7 +2,6 @@
 using System.Linq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Parser;
-using Ocelot.Errors;
 using Ocelot.Responses;
 using Shouldly;
 using TestStack.BDDfy;

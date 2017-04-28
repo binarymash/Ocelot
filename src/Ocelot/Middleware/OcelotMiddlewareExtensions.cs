@@ -1,25 +1,26 @@
 ﻿using System.Collections.Generic;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
-using Ocelot.Authentication.Middleware;
-using Ocelot.Cache.Middleware;
-using Ocelot.Claims.Middleware;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.Errors.Middleware;
-using Ocelot.Headers.Middleware;
-using Ocelot.QueryStrings.Middleware;
-using Ocelot.Request.Middleware;
-using Ocelot.Requester.Middleware;
-using Ocelot.RequestId.Middleware;
-using Ocelot.Responder.Middleware;
-using Ocelot.RateLimit.Middleware;
+using Ocelot.Middleware.Authentication.Middleware;
+using Ocelot.Middleware.ClaimsAuthorisation.Middleware;
+using Ocelot.Middleware.ClaimsToClaimsMapper.Middleware;
+using Ocelot.Middleware.ClaimsToHeadersMapper.Middleware;
+using Ocelot.Middleware.ClaimsToQueriesMapper.Middleware;
+using Ocelot.Middleware.DownstreamRequestSender.Middleware;
+using Ocelot.Middleware.DownstreamResponseCacher.Middleware;
+using Ocelot.Middleware.DownstreamRouteFinder.Middleware;
+using Ocelot.Middleware.DownstreamUrlCreator.Middleware;
+using Ocelot.Middleware.GlobalExceptionHandler.Middleware;
+using Ocelot.Middleware.HttpStatusCodeMapper.Middleware;
+using Ocelot.Middleware.LoadBalancer.Middleware;
+using Ocelot.Middleware.RateLimiter.Middleware;
+using Ocelot.Middleware.Request.Middleware;
+using Ocelot.Middleware.RequestIdTracker.Middleware;
 
 namespace Ocelot.Middleware
 {
     using System;
     using System.Threading.Tasks;
-    using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
     using Microsoft.AspNetCore.Http;
     using Microsoft.Extensions.Options;
@@ -27,7 +28,6 @@ namespace Ocelot.Middleware
     using Ocelot.Configuration.File;
     using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Setter;
-    using Ocelot.LoadBalancer.Middleware;
 
     public static class OcelotMiddlewareExtensions
     {

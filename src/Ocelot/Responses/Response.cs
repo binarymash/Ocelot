@@ -1,5 +1,5 @@
+using Ocelot.Middleware.GlobalExceptionHandler;
 using System.Collections.Generic;
-using Ocelot.Errors;
 
 namespace Ocelot.Responses
 {
