@@ -6,11 +6,10 @@ namespace Ocelot.Configuration.Builder
     {
 
         private string _provider;
-        private string _providerRootUrl;
-        private string _scopeName;
-        private string _scopeSecret;
-        private bool _requireHttps;
-        private List<string> _additionalScopes;
+
+        private List<string> _allowedScopes;
+
+        private IAuthenticationConfig _identityServerConfig;
 
         public AuthenticationOptionsBuilder WithProvider(string provider)
         {
@@ -18,39 +17,82 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithProviderRootUrl(string providerRootUrl)
+        public AuthenticationOptionsBuilder WithAllowedScopes(List<string> allowedScopes)
         {
-            _providerRootUrl = providerRootUrl;
+            _allowedScopes = allowedScopes;
             return this;
         }
 
-        public AuthenticationOptionsBuilder WithScopeName(string scopeName)
+        public AuthenticationOptionsBuilder WithConfig(IAuthenticationConfig config)
         {
-            _scopeName = scopeName;
-            return this;
-        }
-
-        public AuthenticationOptionsBuilder WithScopeSecret(string scopeSecret)
-        {
-            _scopeSecret = scopeSecret;
-            return this;
-        }
-
-        public AuthenticationOptionsBuilder WithRequireHttps(bool requireHttps)
-        {
-            _requireHttps = requireHttps;
-            return this;
-        }
-
-        public AuthenticationOptionsBuilder WithAdditionalScopes(List<string> additionalScopes)
-        {
-            _additionalScopes = additionalScopes;
+            _identityServerConfig = config;
             return this;
         }
 
         public AuthenticationOptions Build()
         {
-            return new AuthenticationOptions(_provider, _providerRootUrl, _scopeName, _requireHttps, _additionalScopes, _scopeSecret);
+            return new AuthenticationOptions(_provider, _allowedScopes, _identityServerConfig);
+        }
+    }
+
+    public class IdentityServerConfigBuilder
+    {
+        private string _providerRootUrl;
+        private string _apiName;
+        private string _apiSecret;
+        private bool _requireHttps;
+        
+        public IdentityServerConfigBuilder WithProviderRootUrl(string providerRootUrl)
+        {
+            _providerRootUrl = providerRootUrl;
+            return this;
+        }
+
+        public IdentityServerConfigBuilder WithApiName(string apiName)
+        {
+            _apiName = apiName;
+            return this;
+        }
+
+        public IdentityServerConfigBuilder WithApiSecret(string apiSecret)
+        {
+            _apiSecret = apiSecret;
+            return this;
+        }
+
+        public IdentityServerConfigBuilder WithRequireHttps(bool requireHttps)
+        {
+            _requireHttps = requireHttps;
+            return this;
+        }
+
+        public IdentityServerConfig Build()
+        {
+            return new IdentityServerConfig(_providerRootUrl, _apiName, _requireHttps, _apiSecret);
+        }
+    }
+
+    public class JwtConfigBuilder
+    {
+        public string _authority;
+
+        public string _audience;
+
+        public JwtConfigBuilder WithAuthority(string authority)
+        {
+            _authority = authority;
+            return this;
+        }
+
+        public JwtConfigBuilder WithAudience(string audience)
+        {
+            _audience = audience;
+            return this;
+        }
+
+        public JwtConfig Build()
+        {
+            return new JwtConfig(_authority, _audience);
         }
     }
 }

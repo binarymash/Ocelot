@@ -15,9 +15,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
+using Ocelot.Configuration.Repository;
 using Ocelot.DependencyInjection;
 using Ocelot.ManualTest;
 using Ocelot.Middleware;
+using Ocelot.ServiceDiscovery;
 using Shouldly;
 using ConfigurationBuilder = Microsoft.Extensions.Configuration.ConfigurationBuilder;
 
@@ -84,6 +86,22 @@ namespace Ocelot.AcceptanceTests
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
+        public void GivenOcelotIsRunningUsingConsulToStoreConfig(ConsulRegistryConfiguration consulConfig)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddOcelotStoreConfigurationInConsul(consulConfig);
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder
+                .UseStartup<Startup>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
         internal void ThenTheResponseShouldBe(FileConfiguration expected)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
@@ -138,8 +156,7 @@ namespace Ocelot.AcceptanceTests
                         .WithDictionaryHandle();
                     };
                     
-                    s.AddOcelotOutputCaching(settings);
-                    s.AddOcelot(configuration);
+                    s.AddOcelot(configuration, settings);
                 })
                 .ConfigureLogging(l =>
                 {
@@ -167,6 +184,52 @@ namespace Ocelot.AcceptanceTests
                 new KeyValuePair<string, string>("client_id", "client"),
                 new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "api"),
+                new KeyValuePair<string, string>("username", "test"),
+                new KeyValuePair<string, string>("password", "test"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.PostAsync(tokenUrl, content).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
+                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            }
+        }
+
+        public void GivenIHaveATokenForApiReadOnlyScope(string url)
+        {
+            var tokenUrl = $"{url}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "client"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "api.readOnly"),
+                new KeyValuePair<string, string>("username", "test"),
+                new KeyValuePair<string, string>("password", "test"),
+                new KeyValuePair<string, string>("grant_type", "password")
+            };
+            var content = new FormUrlEncodedContent(formData);
+
+            using (var httpClient = new HttpClient())
+            {
+                var response = httpClient.PostAsync(tokenUrl, content).Result;
+                var responseContent = response.Content.ReadAsStringAsync().Result;
+                response.EnsureSuccessStatusCode();
+                _token = JsonConvert.DeserializeObject<BearerToken>(responseContent);
+            }
+        }
+
+        public void GivenIHaveATokenForApi2(string url)
+        {
+            var tokenUrl = $"{url}/connect/token";
+            var formData = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("client_id", "client"),
+                new KeyValuePair<string, string>("client_secret", "secret"),
+                new KeyValuePair<string, string>("scope", "api2"),
                 new KeyValuePair<string, string>("username", "test"),
                 new KeyValuePair<string, string>("password", "test"),
                 new KeyValuePair<string, string>("grant_type", "password")

@@ -17,6 +17,7 @@
         InstructionNotForClaimsError,
         UnauthorizedError,
         ClaimValueNotAuthorisedError,
+        ScopeNotAuthorisedError,
         UserDoesNotHaveClaimError,
         DownstreamPathTemplateContainsSchemeError,
         DownstreamPathNullOrEmptyError,
@@ -27,6 +28,9 @@
         UnableToFindServiceDiscoveryProviderError,
         UnableToFindLoadBalancerError,
         RequestTimedOutError,
-        UnableToFindQoSProviderError
+        UnableToFindQoSProviderError,
+        UnableToSetConfigInConsulError,
+        UnmappableRequestError,
+        RateLimitOptionsError
     }
 }

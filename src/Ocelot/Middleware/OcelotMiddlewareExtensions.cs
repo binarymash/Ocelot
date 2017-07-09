@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using IdentityServer4.AccessTokenValidation;
 using Microsoft.AspNetCore.Builder;
 using Ocelot.Authentication.Middleware;
@@ -8,6 +9,7 @@ using Ocelot.DownstreamRouteFinder.Middleware;
 using Ocelot.DownstreamUrlCreator.Middleware;
 using Ocelot.Errors.Middleware;
 using Ocelot.Headers.Middleware;
+using Ocelot.Logging;
 using Ocelot.QueryStrings.Middleware;
 using Ocelot.Request.Middleware;
 using Ocelot.Requester.Middleware;
@@ -53,6 +55,8 @@ namespace Ocelot.Middleware
         {
             await CreateAdministrationArea(builder);
 
+            ConfigureDiagnosticListener(builder);
+
             // This is registered to catch any global exceptions that are not handled
             builder.UseExceptionHandlerMiddleware();
 
@@ -61,6 +65,9 @@ namespace Ocelot.Middleware
 
             // This is registered first so it can catch any errors and issue an appropriate response
             builder.UseResponderMiddleware();
+
+            // Initialises downstream request
+            builder.UseDownstreamRequestInitialiser();
 
             // Then we get the downstream route information
             builder.UseDownstreamRouteFinderMiddleware();
@@ -140,15 +147,20 @@ namespace Ocelot.Middleware
             var configSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
             
             var configProvider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
-            
-            var config = await configSetter.Set(fileConfig.Value);
-            
-            if(config == null || config.IsError)
+
+            var ocelotConfiguration = await configProvider.Get();
+
+            if (ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
             {
-                throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
+                var config = await configSetter.Set(fileConfig.Value);
+
+                if (config == null || config.IsError)
+                {
+                    throw new Exception("Unable to start Ocelot: configuration was not set up correctly.");
+                }
             }
 
-            var ocelotConfiguration = configProvider.Get();
+            ocelotConfiguration = await configProvider.Get();
 
             if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
             {
@@ -173,7 +185,6 @@ namespace Ocelot.Middleware
                 builder.Map(configuration.AdministrationPath, app =>
                 {
                     var identityServerUrl = $"{baseSchemeUrlAndPort}/{configuration.AdministrationPath.Remove(0,1)}";
-
                     app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
                     {
                         Authority = identityServerUrl,
@@ -198,5 +209,22 @@ namespace Ocelot.Middleware
                 builder.Use(middleware);
             }
         }
+
+        /// <summary>
+         /// Configure a DiagnosticListener to listen for diagnostic events when the middleware starts and ends
+         /// </summary>
+         /// <param name="builder"></param>
+         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
+         {
+             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
+
+            //https://github.com/TomPallister/Ocelot/pull/87 not sure why only for dev envs and marc disapeered so just merging and maybe change one day?
+            if (!env.IsProduction())
+             {
+                 var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
+                 var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
+                 diagnosticListener.SubscribeWithAdapter(listener);
+             }
+         }
     }
 }

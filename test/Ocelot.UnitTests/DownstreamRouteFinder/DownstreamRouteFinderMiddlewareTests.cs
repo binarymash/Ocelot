@@ -66,7 +66,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
                     new List<UrlPathPlaceholderNameAndValue>(), 
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("any old string")
-                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .Build())))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
@@ -90,7 +90,7 @@ namespace Ocelot.UnitTests.DownstreamRouteFinder
             _downstreamRoute = new OkResponse<DownstreamRoute>(downstreamRoute);
             _downstreamRouteFinder
                 .Setup(x => x.FindDownstreamRoute(It.IsAny<string>(), It.IsAny<string>()))
-                .Returns(_downstreamRoute);
+                .ReturnsAsync(_downstreamRoute);
         }
 
         public void Dispose()

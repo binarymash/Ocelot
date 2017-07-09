@@ -4,11 +4,13 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Ocelot.Cache;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Ocelot.Utilities;
@@ -22,7 +24,7 @@ namespace Ocelot.Configuration.Creator
     {
         private readonly IOptions<FileConfiguration> _options;
         private readonly IConfigurationValidator _configurationValidator;
-        private readonly ILogger<FileOcelotConfigurationCreator> _logger;
+        private readonly IOcelotLogger _logger;
         private readonly ILoadBalancerFactory _loadBalanceFactory;
         private readonly ILoadBalancerHouse _loadBalancerHouse;
         private readonly IQoSProviderFactory _qoSProviderFactory;
@@ -35,11 +37,12 @@ namespace Ocelot.Configuration.Creator
         private IQoSOptionsCreator _qosOptionsCreator;
         private IReRouteOptionsCreator _fileReRouteOptionsCreator;
         private IRateLimitOptionsCreator _rateLimitOptionsCreator;
+        private IRegionCreator _regionCreator;
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
-            IConfigurationValidator configurationValidator, 
-            ILogger<FileOcelotConfigurationCreator> logger,
+            IConfigurationValidator configurationValidator,
+            IOcelotLoggerFactory loggerFactory,
             ILoadBalancerFactory loadBalancerFactory,
             ILoadBalancerHouse loadBalancerHouse, 
             IQoSProviderFactory qoSProviderFactory, 
@@ -51,9 +54,11 @@ namespace Ocelot.Configuration.Creator
             IServiceProviderConfigurationCreator serviceProviderConfigCreator,
             IQoSOptionsCreator qosOptionsCreator,
             IReRouteOptionsCreator fileReRouteOptionsCreator,
-            IRateLimitOptionsCreator rateLimitOptionsCreator
+            IRateLimitOptionsCreator rateLimitOptionsCreator,
+            IRegionCreator regionCreator
             )
         {
+            _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
             _upstreamTemplatePatternCreator = upstreamTemplatePatternCreator;
@@ -64,7 +69,7 @@ namespace Ocelot.Configuration.Creator
             _qosProviderHouse = qosProviderHouse;
             _options = options;
             _configurationValidator = configurationValidator;
-            _logger = logger;
+            _logger = loggerFactory.CreateLogger<FileOcelotConfigurationCreator>();
             _claimsToThingCreator = claimsToThingCreator;
             _serviceProviderConfigCreator = serviceProviderConfigCreator;
             _qosOptionsCreator = qosOptionsCreator;
@@ -136,6 +141,8 @@ namespace Ocelot.Configuration.Creator
 
             var rateLimitOption = _rateLimitOptionsCreator.Create(fileReRoute, globalConfiguration, fileReRouteOptions.EnableRateLimiting);
 
+            var region = _regionCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -150,7 +157,7 @@ namespace Ocelot.Configuration.Creator
                 .WithClaimsToQueries(claimsToQueries)
                 .WithRequestIdKey(requestIdKey)
                 .WithIsCached(fileReRouteOptions.IsCached)
-                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds))
+                .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
                 .WithDownstreamHost(fileReRoute.DownstreamHost)

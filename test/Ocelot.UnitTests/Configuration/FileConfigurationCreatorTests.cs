@@ -2,12 +2,14 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using Ocelot.Cache;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Creator;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Validator;
 using Ocelot.LoadBalancer.LoadBalancers;
+using Ocelot.Logging;
 using Ocelot.Requester.QoS;
 using Ocelot.Responses;
 using Shouldly;
@@ -16,13 +18,17 @@ using Xunit;
 
 namespace Ocelot.UnitTests.Configuration
 {
+    using System.Collections;
+
+    using Ocelot.UnitTests.TestData;
+
     public class FileConfigurationCreatorTests
     {
         private readonly Mock<IOptions<FileConfiguration>> _fileConfig;
         private readonly Mock<IConfigurationValidator> _validator;
         private Response<IOcelotConfiguration> _config;
         private FileConfiguration _fileConfiguration;
-        private readonly Mock<ILogger<FileOcelotConfigurationCreator>> _logger;
+        private readonly Mock<IOcelotLoggerFactory> _logger;
         private readonly FileOcelotConfigurationCreator _ocelotConfigurationCreator;
         private readonly Mock<ILoadBalancerFactory> _loadBalancerFactory;
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
@@ -38,13 +44,14 @@ namespace Ocelot.UnitTests.Configuration
         private Mock<IQoSOptionsCreator> _qosOptionsCreator;
         private Mock<IReRouteOptionsCreator> _fileReRouteOptionsCreator;
         private Mock<IRateLimitOptionsCreator> _rateLimitOptions;
+        private Mock<IRegionCreator> _regionCreator;
 
         public FileConfigurationCreatorTests()
         {
             _qosProviderFactory = new Mock<IQoSProviderFactory>();
             _qosProviderHouse = new Mock<IQosProviderHouse>();
             _qosProvider = new Mock<IQoSProvider>();
-            _logger = new Mock<ILogger<FileOcelotConfigurationCreator>>();
+            _logger = new Mock<IOcelotLoggerFactory>();
             _validator = new Mock<IConfigurationValidator>();
             _fileConfig = new Mock<IOptions<FileConfiguration>>();
             _loadBalancerFactory = new Mock<ILoadBalancerFactory>();
@@ -58,6 +65,7 @@ namespace Ocelot.UnitTests.Configuration
             _qosOptionsCreator = new Mock<IQoSOptionsCreator>();
             _fileReRouteOptionsCreator = new Mock<IReRouteOptionsCreator>();
             _rateLimitOptions = new Mock<IRateLimitOptionsCreator>();
+            _regionCreator = new Mock<IRegionCreator>();
 
             _ocelotConfigurationCreator = new FileOcelotConfigurationCreator( 
                 _fileConfig.Object, _validator.Object, _logger.Object,
@@ -65,7 +73,51 @@ namespace Ocelot.UnitTests.Configuration
                 _qosProviderFactory.Object, _qosProviderHouse.Object, _claimsToThingCreator.Object,
                 _authOptionsCreator.Object, _upstreamTemplatePatternCreator.Object, _requestIdKeyCreator.Object,
                 _serviceProviderConfigCreator.Object, _qosOptionsCreator.Object, _fileReRouteOptionsCreator.Object,
-                _rateLimitOptions.Object);
+                _rateLimitOptions.Object, _regionCreator.Object);
+        }
+
+        [Fact]
+        public void should_call_region_creator()
+        {
+            var reRouteOptions = new ReRouteOptionsBuilder()
+                .Build();
+                
+            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                            {
+                                new FileReRoute
+                                {
+                                    DownstreamHost = "127.0.0.1",
+                                    UpstreamPathTemplate = "/api/products/{productId}",
+                                    DownstreamPathTemplate = "/products/{productId}",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
+                                    FileCacheOptions = new FileCacheOptions
+                                    {
+                                        Region = "region"
+                                    }
+                                }
+                            },
+            }))
+                .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
+                .And(x => x.GivenTheConfigIsValid())
+                .And(x => x.GivenTheFollowingRegionIsReturned("region"))
+                .When(x => x.WhenICreateTheConfig())
+                .Then(x => x.ThenTheRegionCreatorIsCalledCorrectly("region"))
+                .BDDfy();
+        }
+
+        private void GivenTheFollowingRegionIsReturned(string region)
+        {
+            _regionCreator
+                .Setup(x => x.Create(It.IsAny<FileReRoute>()))
+                .Returns(region);
+        }
+
+        private void ThenTheRegionCreatorIsCalledCorrectly(string expected)
+        {
+            _regionCreator
+                .Verify(x => x.Create(_fileConfiguration.ReRoutes[0]), Times.Once);
         }
 
         [Fact]
@@ -83,7 +135,7 @@ namespace Ocelot.UnitTests.Configuration
                                     DownstreamHost = "127.0.0.1",
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                 }
                             },
             }))
@@ -116,7 +168,7 @@ namespace Ocelot.UnitTests.Configuration
                         DownstreamHost = "127.0.0.1",
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         QoSOptions = new FileQoSOptions
                         {
                             TimeoutValue = 1,
@@ -152,7 +204,7 @@ namespace Ocelot.UnitTests.Configuration
                                         DownstreamHost = "127.0.0.1",
                                         UpstreamPathTemplate = "/api/products/{productId}",
                                         DownstreamPathTemplate = "/products/{productId}",
-                                        UpstreamHttpMethod = "Get",
+                                        UpstreamHttpMethod = new List<string> { "Get" },
                                     }
                                 },
                             }))
@@ -180,7 +232,7 @@ namespace Ocelot.UnitTests.Configuration
                                     DownstreamHost = "127.0.0.1",
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                 }
                             },
                         }))
@@ -193,7 +245,7 @@ namespace Ocelot.UnitTests.Configuration
                                     .WithDownstreamHost("127.0.0.1")
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .Build()
                             }))
                 .BDDfy();
@@ -214,7 +266,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     DownstreamScheme = "https",
                                                     UpstreamPathTemplate = "/api/products/{productId}",
                                                     DownstreamPathTemplate = "/products/{productId}",
-                                                    UpstreamHttpMethod = "Get",
+                                                    UpstreamHttpMethod = new List<string> { "Get" },
                                                 }
                                             },
                                         }))
@@ -227,7 +279,7 @@ namespace Ocelot.UnitTests.Configuration
                                                     .WithDownstreamScheme("https")
                                                     .WithDownstreamPathTemplate("/products/{productId}")
                                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                                    .WithUpstreamHttpMethod("Get")
+                                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                                     .Build()
                                             }))
                                 .BDDfy();
@@ -247,7 +299,7 @@ namespace Ocelot.UnitTests.Configuration
                                 {
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                     ReRouteIsCaseSensitive = false,
                                     ServiceName = "ProductService"
                                 }
@@ -269,7 +321,7 @@ namespace Ocelot.UnitTests.Configuration
                                 new ReRouteBuilder()
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
                                         .WithUseServiceDiscovery(true)
                                         .WithServiceDiscoveryProvider("consul")
@@ -295,7 +347,7 @@ namespace Ocelot.UnitTests.Configuration
                                 {
                                     UpstreamPathTemplate = "/api/products/{productId}",
                                     DownstreamPathTemplate = "/products/{productId}",
-                                    UpstreamHttpMethod = "Get",
+                                    UpstreamHttpMethod = new List<string> { "Get" },
                                     ReRouteIsCaseSensitive = false,
                                 }
                             }
@@ -308,7 +360,7 @@ namespace Ocelot.UnitTests.Configuration
                                 new ReRouteBuilder()
                                     .WithDownstreamPathTemplate("/products/{productId}")
                                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                                    .WithUpstreamHttpMethod("Get")
+                                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                                     .WithServiceProviderConfiguraion(new ServiceProviderConfigurationBuilder()
                                         .WithUseServiceDiscovery(false)
                                         .Build())
@@ -331,7 +383,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         ReRouteIsCaseSensitive = false
                     }
                 }
@@ -345,7 +397,7 @@ namespace Ocelot.UnitTests.Configuration
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
                         .WithUpstreamPathTemplate("/api/products/{productId}")
-                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithUpstreamTemplatePattern("(?i)/api/products/.*/$")
                         .Build()
                 }))
@@ -366,7 +418,7 @@ namespace Ocelot.UnitTests.Configuration
                     {
                         UpstreamPathTemplate = "/api/products/{productId}",
                         DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
+                        UpstreamHttpMethod = new List<string> { "Get" },
                         ReRouteIsCaseSensitive = true
                     }
                 },
@@ -384,7 +436,7 @@ namespace Ocelot.UnitTests.Configuration
                     new ReRouteBuilder()
                         .WithDownstreamPathTemplate("/products/{productId}")
                         .WithUpstreamPathTemplate("/api/products/{productId}")
-                        .WithUpstreamHttpMethod("Get")
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
                         .WithRequestIdKey("blahhhh")
                         .Build()
                 }))
@@ -392,20 +444,18 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_create_with_headers_to_extract()
+        [Theory]
+        [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
+        public void should_create_with_headers_to_extract(string provider, IAuthenticationConfig config, FileConfiguration fileConfig)
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(true)
                 .Build();
 
             var authenticationOptions = new AuthenticationOptionsBuilder()
-                    .WithProvider("IdentityServer")
-                    .WithProviderRootUrl("http://localhost:51888")
-                    .WithRequireHttps(false)
-                    .WithScopeSecret("secret")
-                    .WithScopeName("api")
-                    .WithAdditionalScopes(new List<string>())
+                    .WithProvider(provider)
+                    .WithAllowedScopes(new List<string>())
+                    .WithConfig(config)
                     .Build();
 
             var expected = new List<ReRoute>
@@ -413,7 +463,7 @@ namespace Ocelot.UnitTests.Configuration
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("/products/{productId}")
                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .WithAuthenticationOptions(authenticationOptions)
                     .WithClaimsToHeaders(new List<ClaimToThing>
                     {
@@ -422,99 +472,51 @@ namespace Ocelot.UnitTests.Configuration
                     .Build()
             };
 
-            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        UpstreamPathTemplate = "/api/products/{productId}",
-                        DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
-                        ReRouteIsCaseSensitive = true,
-                        AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AdditionalScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
-                            },
-                        AddHeadersToRequest =
-                        {
-                            {"CustomerId", "Claims[CustomerId] > value"},
-                        }
-                    }
-                }
-            }))
+            this.Given(x => x.GivenTheConfigIs(fileConfig))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
-                .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing>{new ClaimToThing("CustomerId", "CustomerId", "", 0)}))
+                .And(x => x.GivenTheClaimsToThingCreatorReturns(new List<ClaimToThing> { new ClaimToThing("CustomerId", "CustomerId", "", 0) }))
                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
-                .And(x => x.ThenTheAuthenticationOptionsAre(expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(provider, expected))
                 .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
                 .BDDfy();
         }
 
-        [Fact]
-        public void should_create_with_authentication_properties()
+        [Theory]
+        [MemberData(nameof(AuthenticationConfigTestData.GetAuthenticationData), MemberType = typeof(AuthenticationConfigTestData))]
+        public void should_create_with_authentication_properties(string provider, IAuthenticationConfig config, FileConfiguration fileConfig)
         {
             var reRouteOptions = new ReRouteOptionsBuilder()
                 .WithIsAuthenticated(true)
                 .Build();
 
-             var authenticationOptions = new AuthenticationOptionsBuilder()
-                    .WithProvider("IdentityServer")
-                    .WithProviderRootUrl("http://localhost:51888")
-                    .WithRequireHttps(false)
-                    .WithScopeSecret("secret")
-                    .WithScopeName("api")
-                    .WithAdditionalScopes(new List<string>())
-                    .Build();
+            var authenticationOptions = new AuthenticationOptionsBuilder()
+                   .WithProvider(provider)
+                   .WithAllowedScopes(new List<string>())
+                   .WithConfig(config)
+                   .Build();
 
             var expected = new List<ReRoute>
             {
                 new ReRouteBuilder()
                     .WithDownstreamPathTemplate("/products/{productId}")
                     .WithUpstreamPathTemplate("/api/products/{productId}")
-                    .WithUpstreamHttpMethod("Get")
+                    .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .WithAuthenticationOptions(authenticationOptions)
                     .Build()
             };
 
-            this.Given(x => x.GivenTheConfigIs(new FileConfiguration
-            {
-                ReRoutes = new List<FileReRoute>
-                {
-                    new FileReRoute
-                    {
-                        UpstreamPathTemplate = "/api/products/{productId}",
-                        DownstreamPathTemplate = "/products/{productId}",
-                        UpstreamHttpMethod = "Get",
-                        ReRouteIsCaseSensitive = true,
-                        AuthenticationOptions = new FileAuthenticationOptions
-                            {
-                                AdditionalScopes =  new List<string>(),
-                                Provider = "IdentityServer",
-                                ProviderRootUrl = "http://localhost:51888",
-                                RequireHttps = false,
-                                ScopeName = "api",
-                                ScopeSecret = "secret"
-                            }
-                    }
-                }
-            }))
+            this.Given(x => x.GivenTheConfigIs(fileConfig))
                 .And(x => x.GivenTheConfigIsValid())
                 .And(x => x.GivenTheFollowingOptionsAreReturned(reRouteOptions))
                 .And(x => x.GivenTheAuthOptionsCreatorReturns(authenticationOptions))
                 .And(x => x.GivenTheLoadBalancerFactoryReturns())
                 .When(x => x.WhenICreateTheConfig())
                 .Then(x => x.ThenTheReRoutesAre(expected))
-                .And(x => x.ThenTheAuthenticationOptionsAre(expected))
+                .And(x => x.ThenTheAuthenticationOptionsAre(provider, expected))
                 .And(x => x.ThenTheAuthOptionsCreatorIsCalledCorrectly())
                 .BDDfy();
         }
@@ -585,20 +587,34 @@ namespace Ocelot.UnitTests.Configuration
             }
         }
 
-        private void ThenTheAuthenticationOptionsAre(List<ReRoute> expectedReRoutes)
+        private void ThenTheAuthenticationOptionsAre(string provider, List<ReRoute> expectedReRoutes)
         {
             for (int i = 0; i < _config.Data.ReRoutes.Count; i++)
             {
                 var result = _config.Data.ReRoutes[i].AuthenticationOptions;
                 var expected = expectedReRoutes[i].AuthenticationOptions;
 
-                result.AdditionalScopes.ShouldBe(expected.AdditionalScopes);
+                result.AllowedScopes.ShouldBe(expected.AllowedScopes);
                 result.Provider.ShouldBe(expected.Provider);
-                result.ProviderRootUrl.ShouldBe(expected.ProviderRootUrl);
-                result.RequireHttps.ShouldBe(expected.RequireHttps);
-                result.ScopeName.ShouldBe(expected.ScopeName);
-                result.ScopeSecret.ShouldBe(expected.ScopeSecret);
 
+                if (provider.ToLower() == "identityserver")
+                {
+                    var config = result.Config as IdentityServerConfig;
+                    var expectedConfig = expected.Config as IdentityServerConfig;
+
+                    config.ProviderRootUrl.ShouldBe(expectedConfig.ProviderRootUrl);
+                    config.RequireHttps.ShouldBe(expectedConfig.RequireHttps);
+                    config.ApiName.ShouldBe(expectedConfig.ApiName);
+                    config.ApiSecret.ShouldBe(expectedConfig.ApiSecret);
+                }
+                else
+                {
+                    var config = result.Config as JwtConfig;
+                    var expectedConfig = expected.Config as JwtConfig;
+
+                    config.Audience.ShouldBe(expectedConfig.Audience);
+                    config.Authority.ShouldBe(expectedConfig.Authority);
+                }
             }
         }
 
@@ -689,10 +705,10 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheQosOptionsAre(QoSOptions qosOptions)
         {
-            _config.Data.ReRoutes[0].QosOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
+            _config.Data.ReRoutes[0].QosOptionsOptions.DurationOfBreak.ShouldBe(qosOptions.DurationOfBreak);
 
-            _config.Data.ReRoutes[0].QosOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
-            _config.Data.ReRoutes[0].QosOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
+            _config.Data.ReRoutes[0].QosOptionsOptions.ExceptionsAllowedBeforeBreaking.ShouldBe(qosOptions.ExceptionsAllowedBeforeBreaking);
+            _config.Data.ReRoutes[0].QosOptionsOptions.TimeoutValue.ShouldBe(qosOptions.TimeoutValue);
         }
     }
 }

@@ -183,6 +183,7 @@ ClientBin/
 *.dbmdl
 *.dbproj.schemaview
 *.pfx
+!idsrv3test.pfx
 *.publishsettings
 node_modules/
 orleans.codegen.cs
@@ -235,6 +236,7 @@ _Pvt_Extensions
 
 # FAKE - F# Make
 .fake/
+!tools/packages.config
 tools/
 
 # MacOS

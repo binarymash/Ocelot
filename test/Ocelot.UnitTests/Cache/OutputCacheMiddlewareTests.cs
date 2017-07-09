@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using CacheManager.Core;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Moq;
 using Ocelot.Cache;
 using Ocelot.Cache.Middleware;
@@ -37,7 +36,6 @@ namespace Ocelot.UnitTests.Cache
             _cacheManager = new Mock<IOcelotCache<HttpResponseMessage>>();
             _scopedRepo = new Mock<IRequestScopedDataRepository>();
 
-
             _url = "http://localhost:51879";
             var builder = new WebHostBuilder()
                 .ConfigureServices(x =>
@@ -46,6 +44,7 @@ namespace Ocelot.UnitTests.Cache
                     x.AddLogging();
                     x.AddSingleton(_cacheManager.Object);
                     x.AddSingleton(_scopedRepo.Object);
+                    x.AddSingleton<IRegionCreator, RegionCreator>();
                 })
                 .UseUrls(_url)
                 .UseKestrel()
@@ -56,6 +55,10 @@ namespace Ocelot.UnitTests.Cache
                 {
                     app.UseOutputCacheMiddleware();
                 });
+
+            _scopedRepo
+                .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
+                .Returns(new OkResponse<HttpRequestMessage>(new HttpRequestMessage(HttpMethod.Get, "https://some.url/blah?abcd=123")));
 
             _server = new TestServer(builder);
             _client = _server.CreateClient();
@@ -89,8 +92,8 @@ namespace Ocelot.UnitTests.Cache
         {
             var reRoute = new ReRouteBuilder()
                 .WithIsCached(true)
-                .WithCacheOptions(new CacheOptions(100))
-                .WithUpstreamHttpMethod("Get")
+                .WithCacheOptions(new CacheOptions(100, "kanken"))
+                .WithUpstreamHttpMethod(new List<string> { "Get" })
                 .Build();
                 
             var downstreamRoute = new DownstreamRoute(new List<UrlPathPlaceholderNameAndValue>(), reRoute);
@@ -117,13 +120,13 @@ namespace Ocelot.UnitTests.Cache
         private void ThenTheCacheGetIsCalledCorrectly()
         {
             _cacheManager
-                .Verify(x => x.Get(It.IsAny<string>()), Times.Once);
+                .Verify(x => x.Get(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
         }
 
         private void ThenTheCacheAddIsCalledCorrectly()
         {
             _cacheManager
-                .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<HttpResponseMessage>(), It.IsAny<TimeSpan>()), Times.Once);
+                .Verify(x => x.Add(It.IsAny<string>(), It.IsAny<HttpResponseMessage>(), It.IsAny<TimeSpan>(), It.IsAny<string>()), Times.Once);
         }
 
         private void GivenResponseIsNotCached()
@@ -137,7 +140,7 @@ namespace Ocelot.UnitTests.Cache
         {
             _response = response;
             _cacheManager
-              .Setup(x => x.Get(It.IsAny<string>()))
+              .Setup(x => x.Get(It.IsAny<string>(), It.IsAny<string>()))
               .Returns(_response);
         }
 
