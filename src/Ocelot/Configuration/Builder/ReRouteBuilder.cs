@@ -26,11 +26,14 @@ namespace Ocelot.Configuration.Builder
         private string _downstreamHost;
         private int _downstreamPort;
         private string _loadBalancer;
-        private ServiceProviderConfiguration _serviceProviderConfiguraion;
         private bool _useQos;
         private QoSOptions _qosOptions;
+        private HttpHandlerOptions _httpHandlerOptions;
         public bool _enableRateLimiting;
         public RateLimitOptions _rateLimitOptions;
+        private string _authenticationProviderKey;
+        private bool _useServiceDiscovery;
+        private string _serviceName;
 
         public ReRouteBuilder WithLoadBalancer(string loadBalancer)
         {
@@ -146,15 +149,9 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
        
-        public ReRouteBuilder WithLoadBalancerKey(string loadBalancerKey)
+        public ReRouteBuilder WithReRouteKey(string loadBalancerKey)
         {
             _loadBalancerKey = loadBalancerKey;
-            return this;
-        }
-
-        public ReRouteBuilder WithServiceProviderConfiguraion(ServiceProviderConfiguration serviceProviderConfiguraion)
-        {
-            _serviceProviderConfiguraion = serviceProviderConfiguraion;
             return this;
         }
 
@@ -176,6 +173,29 @@ namespace Ocelot.Configuration.Builder
             return this;
         }
 
+        public ReRouteBuilder WithAuthenticationProviderKey(string authenticationProviderKey)
+        {
+            _authenticationProviderKey = authenticationProviderKey;
+            return this;
+        }
+
+        public ReRouteBuilder WithHttpHandlerOptions(HttpHandlerOptions input)
+        {
+            _httpHandlerOptions = input;
+            return this;
+        }
+
+        public ReRouteBuilder WithUseServiceDiscovery(bool useServiceDiscovery)
+        {
+            _useServiceDiscovery = useServiceDiscovery;
+            return this;
+        }
+
+        public ReRouteBuilder WithServiceName(string serviceName)
+        {
+            _serviceName = serviceName;
+            return this;
+        }
 
         public ReRoute Build()
         {
@@ -199,11 +219,13 @@ namespace Ocelot.Configuration.Builder
                 _downstreamHost, 
                 _downstreamPort, 
                 _loadBalancerKey, 
-                _serviceProviderConfiguraion, 
                 _useQos, 
                 _qosOptions,
                 _enableRateLimiting,
-                _rateLimitOptions);
+                _rateLimitOptions,
+                _httpHandlerOptions,
+                _useServiceDiscovery,
+                _serviceName);
         }
     }
 }

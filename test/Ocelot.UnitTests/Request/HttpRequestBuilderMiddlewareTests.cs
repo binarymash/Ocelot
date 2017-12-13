@@ -1,63 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Moq;
-using Ocelot.Configuration.Builder;
-using Ocelot.DownstreamRouteFinder;
-using Ocelot.DownstreamRouteFinder.UrlMatcher;
-using Ocelot.Infrastructure.RequestData;
-using Ocelot.Logging;
-using Ocelot.Request.Builder;
-using Ocelot.Request.Middleware;
-using Ocelot.Responses;
-using TestStack.BDDfy;
-using Xunit;
-using Ocelot.Requester.QoS;
-
-namespace Ocelot.UnitTests.Request
+﻿namespace Ocelot.UnitTests.Request
 {
-    public class HttpRequestBuilderMiddlewareTests : IDisposable
+    using System.Collections.Generic;
+    using System.Net.Http;
+    using Microsoft.Extensions.DependencyInjection;
+    using Moq;
+    using Ocelot.Configuration.Builder;
+    using Ocelot.DownstreamRouteFinder;
+    using Ocelot.DownstreamRouteFinder.UrlMatcher;
+    using Ocelot.Infrastructure.RequestData;
+    using Ocelot.Logging;
+    using Ocelot.Request.Builder;
+    using Ocelot.Request.Middleware;
+    using Ocelot.Responses;
+    using TestStack.BDDfy;
+    using Xunit;
+    using Ocelot.Requester.QoS;
+    using Ocelot.Configuration;
+    using Microsoft.AspNetCore.Builder;
+
+    public class HttpRequestBuilderMiddlewareTests : ServerHostedMiddlewareTest
     {
         private readonly Mock<IRequestCreator> _requestBuilder;
         private readonly Mock<IRequestScopedDataRepository> _scopedRepository;
         private readonly Mock<IQosProviderHouse> _qosProviderHouse;
         private readonly HttpRequestMessage _downstreamRequest;
-        private readonly string _url;
-        private readonly TestServer _server;
-        private readonly HttpClient _client;
-        private HttpResponseMessage _result;
         private OkResponse<Ocelot.Request.Request> _request;
         private OkResponse<string> _downstreamUrl;
         private OkResponse<DownstreamRoute> _downstreamRoute;
 
         public HttpRequestBuilderMiddlewareTests()
         {
-            _url = "http://localhost:51879";
             _qosProviderHouse = new Mock<IQosProviderHouse>();
             _requestBuilder = new Mock<IRequestCreator>();
             _scopedRepository = new Mock<IRequestScopedDataRepository>();
-            var builder = new WebHostBuilder()
-              .ConfigureServices(x =>
-              {
-                  x.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
-                  x.AddLogging();
-                  x.AddSingleton(_qosProviderHouse.Object);
-                  x.AddSingleton(_requestBuilder.Object);
-                  x.AddSingleton(_scopedRepository.Object);
-              })
-              .UseUrls(_url)
-              .UseKestrel()
-              .UseContentRoot(Directory.GetCurrentDirectory())
-              .UseIISIntegration()
-              .UseUrls(_url)
-              .Configure(app =>
-              {
-                  app.UseHttpRequestBuilderMiddleware();
-              });
 
             _downstreamRequest = new HttpRequestMessage();
 
@@ -65,8 +40,7 @@ namespace Ocelot.UnitTests.Request
                 .Setup(sr => sr.Get<HttpRequestMessage>("DownstreamRequest"))
                 .Returns(new OkResponse<HttpRequestMessage>(_downstreamRequest));
 
-            _server = new TestServer(builder);
-            _client = _server.CreateClient();
+            GivenTheTestServerIsConfigured();
         }
 
         [Fact]
@@ -77,21 +51,44 @@ namespace Ocelot.UnitTests.Request
                 new ReRouteBuilder()
                     .WithRequestIdKey("LSRequestId")
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
+                    .WithHttpHandlerOptions(new HttpHandlerOptions(true, true))
                     .Build());
 
             this.Given(x => x.GivenTheDownStreamUrlIs("any old string"))
                 .And(x => x.GivenTheQosProviderHouseReturns(new OkResponse<IQoSProvider>(new NoQoSProvider())))
                 .And(x => x.GivenTheDownStreamRouteIs(downstreamRoute))
-                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider())))
+                .And(x => x.GivenTheRequestBuilderReturns(new Ocelot.Request.Request(new HttpRequestMessage(), true, new NoQoSProvider(), false, false)))
                 .When(x => x.WhenICallTheMiddleware())
                 .Then(x => x.ThenTheScopedDataRepositoryIsCalledCorrectly())
                 .BDDfy();
         }
 
+        protected override void GivenTheTestServerServicesAreConfigured(IServiceCollection services)
+        {
+            services.AddSingleton<IOcelotLoggerFactory, AspDotNetLoggerFactory>();
+            services.AddLogging();
+            services.AddSingleton(_qosProviderHouse.Object);
+            services.AddSingleton(_requestBuilder.Object);
+            services.AddSingleton(_scopedRepository.Object);
+        }
+
+        protected override void GivenTheTestServerPipelineIsConfigured(IApplicationBuilder app)
+        {
+            app.UseHttpRequestBuilderMiddleware();
+        }
+
+        private void GivenTheDownStreamUrlIs(string downstreamUrl)
+        {
+            _downstreamUrl = new OkResponse<string>(downstreamUrl);
+            _scopedRepository
+                .Setup(x => x.Get<string>(It.IsAny<string>()))
+                .Returns(_downstreamUrl);
+        }
+
         private void GivenTheQosProviderHouseReturns(Response<IQoSProvider> qosProvider)
         {
             _qosProviderHouse
-                .Setup(x => x.Get(It.IsAny<string>()))
+                .Setup(x => x.Get(It.IsAny<ReRoute>()))
                 .Returns(qosProvider);
         }
 
@@ -108,7 +105,11 @@ namespace Ocelot.UnitTests.Request
             _request = new OkResponse<Ocelot.Request.Request>(request);
 
             _requestBuilder
-                .Setup(x => x.Build(It.IsAny<HttpRequestMessage>(), It.IsAny<bool>(), It.IsAny<IQoSProvider>()))
+                .Setup(x => x.Build(It.IsAny<HttpRequestMessage>(),
+                                    It.IsAny<bool>(),
+                                    It.IsAny<IQoSProvider>(),
+                                    It.IsAny<bool>(),
+                                    It.IsAny<bool>()))
                 .ReturnsAsync(_request);
         }
 
@@ -116,25 +117,6 @@ namespace Ocelot.UnitTests.Request
         {
             _scopedRepository
                 .Verify(x => x.Add("Request", _request.Data), Times.Once());
-        }
-
-        private void WhenICallTheMiddleware()
-        {
-            _result = _client.GetAsync(_url).Result;
-        }
-
-        private void GivenTheDownStreamUrlIs(string downstreamUrl)
-        {
-            _downstreamUrl = new OkResponse<string>(downstreamUrl);
-            _scopedRepository
-                .Setup(x => x.Get<string>(It.IsAny<string>()))
-                .Returns(_downstreamUrl);
-        }
-
-        public void Dispose()
-        {
-            _client.Dispose();
-            _server.Dispose();
         }
     }
 }

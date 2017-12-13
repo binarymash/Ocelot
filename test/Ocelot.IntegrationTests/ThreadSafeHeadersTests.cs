@@ -1,21 +1,17 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Ocelot.Configuration.File;
-using Ocelot.ManualTest;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 using Microsoft.AspNetCore.Http;
 using System.Threading.Tasks;
-using System.Threading;
 using System.Collections.Concurrent;
 
 namespace Ocelot.IntegrationTests
@@ -23,11 +19,9 @@ namespace Ocelot.IntegrationTests
     public class ThreadSafeHeadersTests : IDisposable
     {
         private readonly HttpClient _httpClient;
-        private HttpResponseMessage _response;
         private IWebHost _builder;
         private IWebHostBuilder _webHostBuilder;
         private readonly string _ocelotBaseUrl;
-        private BearerToken _token;
         private IWebHost _downstreamBuilder;
         private readonly Random _random;
         private readonly ConcurrentBag<ThreadSafeHeadersTestResult> _results;
@@ -61,7 +55,7 @@ namespace Ocelot.IntegrationTests
             };
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
-               .And(x => GivenThereIsAServiceRunningOn("http://localhost:51879"))
+                .And(x => GivenThereIsAServiceRunningOn("http://localhost:51879"))
                 .And(x => GivenOcelotIsRunning())
                 .When(x => WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues("/", 300))
                 .Then(x => ThenTheSameHeaderValuesAreReturnedByTheDownstreamService())
@@ -135,7 +129,7 @@ namespace Ocelot.IntegrationTests
             text = File.ReadAllText(configurationPath);
         }
 
-        public void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times)
+        private void WhenIGetUrlOnTheApiGatewayMultipleTimesWithDifferentHeaderValues(string url, int times)
         {
             var tasks = new Task[times];
 

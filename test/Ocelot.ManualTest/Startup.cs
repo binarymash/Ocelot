@@ -38,7 +38,14 @@ namespace Ocelot.ManualTest
                 .WithDictionaryHandle();
             };
 
-            services.AddOcelot(Configuration, settings);
+            services.AddAuthentication()
+                .AddJwtBearer("TestKey", x =>
+                {
+                    x.Authority = "test";
+                    x.Audience = "test";
+                });
+
+            services.AddOcelot(Configuration);
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)

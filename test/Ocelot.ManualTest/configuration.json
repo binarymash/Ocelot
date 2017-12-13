@@ -13,14 +13,11 @@
         "TimeoutValue": 5000
       },
       "AuthenticationOptions": {
-        "Provider": "IdentityServer",
-        "ProviderRootUrl": "http://localhost:52888",
-        "ApiName": "api",
+        "AuthenticationProviderKey": "TestKey",
         "AllowedScopes": [
           "openid",
           "offline_access"
-        ],
-        "ApiSecret": "secret"
+        ]
       },
       "AddHeadersToRequest": {
         "CustomerId": "Claims[CustomerId] > value",
@@ -309,6 +306,6 @@
 
   "GlobalConfiguration": {
     "RequestIdKey": "OcRequestId",
-    "AdministrationPath": "/admin"
+    "AdministrationPath": "/administration"
   }
 }

@@ -19,20 +19,23 @@ namespace Ocelot.Configuration
             List<ClaimToThing> claimsToQueries, 
             string requestIdKey, 
             bool isCached, 
-            CacheOptions fileCacheOptions, 
+            CacheOptions cacheOptions, 
             string downstreamScheme, 
             string loadBalancer, 
             string downstreamHost, 
             int downstreamPort, 
             string reRouteKey, 
-            ServiceProviderConfiguration serviceProviderConfiguraion,
             bool isQos,
             QoSOptions qosOptions,
             bool enableEndpointRateLimiting,
-            RateLimitOptions ratelimitOptions)
+            RateLimitOptions ratelimitOptions,
+            HttpHandlerOptions httpHandlerOptions,
+            bool useServiceDiscovery,
+            string serviceName)
         {
+            ServiceName = serviceName;
+            UseServiceDiscovery = useServiceDiscovery;
             ReRouteKey = reRouteKey;
-            ServiceProviderConfiguraion = serviceProviderConfiguraion;
             LoadBalancer = loadBalancer;
             DownstreamHost = downstreamHost;
             DownstreamPort = downstreamPort;
@@ -46,7 +49,7 @@ namespace Ocelot.Configuration
             IsAuthorised = isAuthorised;
             RequestIdKey = requestIdKey;
             IsCached = isCached;
-            CacheOptions = fileCacheOptions;
+            CacheOptions = cacheOptions;
             ClaimsToQueries = claimsToQueries
                 ?? new List<ClaimToThing>();
             ClaimsToClaims = claimsToClaims 
@@ -58,6 +61,7 @@ namespace Ocelot.Configuration
             QosOptionsOptions = qosOptions;
             EnableEndpointEndpointRateLimiting = enableEndpointRateLimiting;
             RateLimitOptions = ratelimitOptions;
+            HttpHandlerOptions = httpHandlerOptions;
         }
 
         public string ReRouteKey {get;private set;}
@@ -81,8 +85,10 @@ namespace Ocelot.Configuration
         public string LoadBalancer {get;private set;}
         public string DownstreamHost { get; private set; }
         public int DownstreamPort { get; private set; }
-        public ServiceProviderConfiguration ServiceProviderConfiguraion { get; private set; }
         public bool EnableEndpointEndpointRateLimiting { get; private set; }
         public RateLimitOptions RateLimitOptions { get; private set; }
+        public HttpHandlerOptions HttpHandlerOptions { get; private set; }
+        public bool UseServiceDiscovery {get;private set;}
+        public string ServiceName {get;private set;}
     }
 }

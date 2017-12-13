@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Http;
+using Ocelot.Configuration;
 using Ocelot.DownstreamRouteFinder;
 using Ocelot.Errors;
 using Ocelot.Infrastructure.RequestData;
@@ -13,10 +14,10 @@ namespace Ocelot.Middleware
         protected OcelotMiddleware(IRequestScopedDataRepository requestScopedDataRepository)
         {
             _requestScopedDataRepository = requestScopedDataRepository;
-            MiddlwareName = this.GetType().Name;
+            MiddlewareName = this.GetType().Name;
         }
 
-        public string MiddlwareName { get; }
+        public string MiddlewareName { get; }
 
         public bool PipelineError => _requestScopedDataRepository.Get<bool>("OcelotMiddlewareError").Data;
 
@@ -30,9 +31,16 @@ namespace Ocelot.Middleware
 
         public HttpResponseMessage HttpResponseMessage => _requestScopedDataRepository.Get<HttpResponseMessage>("HttpResponseMessage").Data;
 
+        public ServiceProviderConfiguration ServiceProviderConfiguration => _requestScopedDataRepository.Get<ServiceProviderConfiguration>("ServiceProviderConfiguration").Data;
+
         public void SetDownstreamRouteForThisRequest(DownstreamRoute downstreamRoute)
         {
             _requestScopedDataRepository.Add("DownstreamRoute", downstreamRoute);
+        }
+
+        public void SetServiceProviderConfigurationForThisRequest(ServiceProviderConfiguration serviceProviderConfiguration)
+        {
+            _requestScopedDataRepository.Add("ServiceProviderConfiguration", serviceProviderConfiguration);
         }
 
         public void SetUpstreamRequestForThisRequest(Request.Request request)
