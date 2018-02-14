@@ -9,6 +9,7 @@ using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.File;
 using Ocelot.Configuration.Parser;
 using Ocelot.Configuration.Validator;
+using Ocelot.DependencyInjection;
 using Ocelot.LoadBalancer;
 using Ocelot.LoadBalancer.LoadBalancers;
 using Ocelot.Logging;
@@ -35,6 +36,10 @@ namespace Ocelot.Configuration.Creator
         private readonly IRateLimitOptionsCreator _rateLimitOptionsCreator;
         private readonly IRegionCreator _regionCreator;
         private readonly IHttpHandlerOptionsCreator _httpHandlerOptionsCreator;
+        private readonly IAdministrationPath _adminPath;
+        private readonly IHeaderFindAndReplaceCreator _headerFAndRCreator;
+        private readonly IDownstreamAddressesCreator _downstreamAddressesCreator;
+
 
         public FileOcelotConfigurationCreator(
             IOptions<FileConfiguration> options, 
@@ -49,9 +54,15 @@ namespace Ocelot.Configuration.Creator
             IReRouteOptionsCreator fileReRouteOptionsCreator,
             IRateLimitOptionsCreator rateLimitOptionsCreator,
             IRegionCreator regionCreator,
-            IHttpHandlerOptionsCreator httpHandlerOptionsCreator
+            IHttpHandlerOptionsCreator httpHandlerOptionsCreator,
+            IAdministrationPath adminPath,
+            IHeaderFindAndReplaceCreator headerFAndRCreator,
+            IDownstreamAddressesCreator downstreamAddressesCreator
             )
         {
+            _downstreamAddressesCreator = downstreamAddressesCreator;
+            _headerFAndRCreator = headerFAndRCreator;
+            _adminPath = adminPath;
             _regionCreator = regionCreator;
             _rateLimitOptionsCreator = rateLimitOptionsCreator;
             _requestIdKeyCreator = requestIdKeyCreator;
@@ -92,7 +103,7 @@ namespace Ocelot.Configuration.Creator
 
             var serviceProviderConfiguration = _serviceProviderConfigCreator.Create(fileConfiguration.GlobalConfiguration);
             
-            var config = new OcelotConfiguration(reRoutes, fileConfiguration.GlobalConfiguration.AdministrationPath, serviceProviderConfiguration);
+            var config = new OcelotConfiguration(reRoutes, _adminPath.Path, serviceProviderConfiguration, fileConfiguration.GlobalConfiguration.RequestIdKey);
 
             return new OkResponse<IOcelotConfiguration>(config);
         }
@@ -123,6 +134,10 @@ namespace Ocelot.Configuration.Creator
 
             var httpHandlerOptions = _httpHandlerOptionsCreator.Create(fileReRoute);
 
+            var hAndRs = _headerFAndRCreator.Create(fileReRoute);
+
+            var downstreamAddresses = _downstreamAddressesCreator.Create(fileReRoute);
+
             var reRoute = new ReRouteBuilder()
                 .WithDownstreamPathTemplate(fileReRoute.DownstreamPathTemplate)
                 .WithUpstreamPathTemplate(fileReRoute.UpstreamPathTemplate)
@@ -140,8 +155,7 @@ namespace Ocelot.Configuration.Creator
                 .WithCacheOptions(new CacheOptions(fileReRoute.FileCacheOptions.TtlSeconds, region))
                 .WithDownstreamScheme(fileReRoute.DownstreamScheme)
                 .WithLoadBalancer(fileReRoute.LoadBalancer)
-                .WithDownstreamHost(fileReRoute.DownstreamHost)
-                .WithDownstreamPort(fileReRoute.DownstreamPort)
+                .WithDownstreamAddresses(downstreamAddresses)
                 .WithReRouteKey(reRouteKey)
                 .WithIsQos(fileReRouteOptions.IsQos)
                 .WithQosOptions(qosOptions)
@@ -150,6 +164,9 @@ namespace Ocelot.Configuration.Creator
                 .WithHttpHandlerOptions(httpHandlerOptions)
                 .WithServiceName(fileReRoute.ServiceName)
                 .WithUseServiceDiscovery(fileReRoute.UseServiceDiscovery)
+                .WithUpstreamHeaderFindAndReplace(hAndRs.Upstream)
+                .WithDownstreamHeaderFindAndReplace(hAndRs.Downstream)
+                .WithUpstreamHost(fileReRoute.UpstreamHost)
                 .Build();
 
             return reRoute;

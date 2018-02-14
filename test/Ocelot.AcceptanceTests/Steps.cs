@@ -83,7 +83,39 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<AcceptanceTestsStartup>());
+
+            _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        /// <summary>
+        /// This is annoying cos it should be in the constructor but we need to set up the file before calling startup so its a step.
+        /// </summary>
+        public void GivenOcelotIsRunningWithHandlers(DelegatingHandler handlerOne, DelegatingHandler handlerTwo)
+        {
+            _webHostBuilder = new WebHostBuilder();
+
+            _webHostBuilder.ConfigureServices(s =>
+            {
+                s.AddSingleton(_webHostBuilder);
+                s.AddOcelot()
+                    .AddDelegatingHandler(() => handlerOne)
+                    .AddDelegatingHandler(() => handlerTwo);
+            });
+            _webHostBuilder.ConfigureAppConfiguration((hostingContext, config) =>
+            {
+                config.SetBasePath(hostingContext.HostingEnvironment.ContentRootPath);
+                var env = hostingContext.HostingEnvironment;
+                config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile($"appsettings.{env.EnvironmentName}.json", optional: true, reloadOnChange: true);
+                config.AddJsonFile("configuration.json");
+                config.AddEnvironmentVariables();
+            }).Configure(a =>
+            {
+                a.UseOcelot().Wait();
+            });
+
+            _ocelotServer = new TestServer(_webHostBuilder);
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -103,9 +135,15 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup>());
+                .UseStartup<AcceptanceTestsStartup>());
 
             _ocelotClient = _ocelotServer.CreateClient();
+        }
+
+        public void ThenTheResponseHeaderIs(string key, string value)
+        {
+            var header = _response.Headers.GetValues(key);
+            header.First().ShouldBe(value);
         }
 
         public void GivenOcelotIsRunningUsingJsonSerializedCache()
@@ -118,7 +156,7 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup_WithCustomCacheHandle>());
+                .UseStartup<StartupWithCustomCacheHandle>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
@@ -148,28 +186,33 @@ namespace Ocelot.AcceptanceTests
             });
 
             _ocelotServer = new TestServer(_webHostBuilder
-                .UseStartup<Startup_WithConsul_And_CustomCacheHandle>());
+                .UseStartup<StartupWithConsulAndCustomCacheHandle>());
 
             _ocelotClient = _ocelotServer.CreateClient();
         }
 
-        internal void ThenTheResponseShouldBe(FileConfiguration expected)
+        internal void ThenTheResponseShouldBe(FileConfiguration expecteds)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
 
-            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
-            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+            response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
             for (var i = 0; i < response.ReRoutes.Count; i++)
             {
-                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
+                for (var j = 0; j < response.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                {
+                    var result = response.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
+                    result.Host.ShouldBe(expected.Host);
+                    result.Port.ShouldBe(expected.Port);
+                }
+
+                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                response.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
+                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].UpstreamPathTemplate);
+                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.ReRoutes[i].UpstreamHttpMethod);
             }
         }
 
@@ -325,6 +368,11 @@ namespace Ocelot.AcceptanceTests
         public void WhenIGetUrlOnTheApiGateway(string url)
         {
             _response = _ocelotClient.GetAsync(url).Result;
+        }
+
+        public void GivenIAddAHeader(string key, string value)
+        {
+            _ocelotClient.DefaultRequestHeaders.Add(key, value);
         }
 
         public void WhenIGetUrlOnTheApiGatewayMultipleTimes(string url, int times)

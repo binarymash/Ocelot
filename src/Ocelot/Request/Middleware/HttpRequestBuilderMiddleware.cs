@@ -30,8 +30,6 @@ namespace Ocelot.Request.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            _logger.LogDebug("started calling request builder middleware");
-
             var qosProvider = _qosProviderHouse.Get(DownstreamRoute.ReRoute);
 
             if (qosProvider.IsError)
@@ -48,25 +46,22 @@ namespace Ocelot.Request.Middleware
                     DownstreamRoute.ReRoute.IsQos,
                     qosProvider.Data,
                     DownstreamRoute.ReRoute.HttpHandlerOptions.UseCookieContainer,
-                    DownstreamRoute.ReRoute.HttpHandlerOptions.AllowAutoRedirect);
-
+                    DownstreamRoute.ReRoute.HttpHandlerOptions.AllowAutoRedirect,
+                    DownstreamRoute.ReRoute.ReRouteKey,
+                    DownstreamRoute.ReRoute.HttpHandlerOptions.UseTracing);
+                    
             if (buildResult.IsError)
             {
                 _logger.LogDebug("IRequestCreator returned an error, setting pipeline error");
-
                 SetPipelineError(buildResult.Errors);
-
                 return;
             }
+
             _logger.LogDebug("setting upstream request");
 
             SetUpstreamRequestForThisRequest(buildResult.Data);
 
-            _logger.LogDebug("calling next middleware");
-
             await _next.Invoke(context);
-
-            _logger.LogDebug("succesfully called next middleware");
         }
     }
 }

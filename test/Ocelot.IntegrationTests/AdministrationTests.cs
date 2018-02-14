@@ -39,13 +39,7 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void should_return_response_401_with_call_re_routes_controller()
         {
-            var configuration = new FileConfiguration
-            {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    AdministrationPath = "/administration"
-                }
-            };
+            var configuration = new FileConfiguration();
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenOcelotIsRunning())
@@ -57,13 +51,7 @@ namespace Ocelot.IntegrationTests
          [Fact]
          public void should_return_response_200_with_call_re_routes_controller()
          {
-             var configuration = new FileConfiguration
-             { 
-                 GlobalConfiguration = new FileGlobalConfiguration
-                 {
-                     AdministrationPath = "/administration"
-                 }
-             };
+            var configuration = new FileConfiguration();
 
              this.Given(x => GivenThereIsAConfiguration(configuration))
                  .And(x => GivenOcelotIsRunning())
@@ -77,13 +65,7 @@ namespace Ocelot.IntegrationTests
         [Fact]
         public void should_be_able_to_use_token_from_ocelot_a_on_ocelot_b()
         {
-            var configuration = new FileConfiguration
-            {
-                GlobalConfiguration = new FileGlobalConfiguration
-                {
-                    AdministrationPath = "/administration"
-                }
-            };
+            var configuration = new FileConfiguration();
 
             this.Given(x => GivenThereIsAConfiguration(configuration))
                 .And(x => GivenIdentityServerSigningEnvironmentalVariablesAreSet())
@@ -102,7 +84,6 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    AdministrationPath = "/administration",
                     RequestIdKey = "RequestId",
                     ServiceDiscoveryProvider = new FileServiceDiscoveryProvider
                     {
@@ -114,8 +95,14 @@ namespace Ocelot.IntegrationTests
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -128,8 +115,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -160,14 +153,19 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    AdministrationPath = "/administration"
                 },
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -175,8 +173,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -189,14 +193,19 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    AdministrationPath = "/administration"
                 },
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "127.0.0.1",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "http",
                         DownstreamPathTemplate = "/geoffrey",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -204,8 +213,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "123.123.123",
-                        DownstreamPort = 443,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "123.123.123",
+                                Port = 443,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/blooper/{productId}",
                         UpstreamHttpMethod = new List<string> { "post" },
@@ -234,14 +249,19 @@ namespace Ocelot.IntegrationTests
             {
                 GlobalConfiguration = new FileGlobalConfiguration
                 {
-                    AdministrationPath = "/administration"
                 },
                 ReRoutes = new List<FileReRoute>()
                 {
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -253,8 +273,14 @@ namespace Ocelot.IntegrationTests
                     },
                     new FileReRoute()
                     {
-                        DownstreamHost = "localhost",
-                        DownstreamPort = 80,
+                        DownstreamHostAndPorts = new List<FileHostAndPort>
+                        {
+                            new FileHostAndPort
+                            {
+                                Host = "localhost",
+                                Port = 80,
+                            }
+                        },
                         DownstreamScheme = "https",
                         DownstreamPathTemplate = "/",
                         UpstreamHttpMethod = new List<string> { "get" },
@@ -289,7 +315,7 @@ namespace Ocelot.IntegrationTests
                .ConfigureServices(x => {
                    x.AddSingleton(_webHostBuilderTwo);
                })
-               .UseStartup<Startup>();
+               .UseStartup<IntegrationTestsStartup>();
 
             _builderTwo = _webHostBuilderTwo.Build();
 
@@ -323,23 +349,28 @@ namespace Ocelot.IntegrationTests
             result.Value.ShouldBe(expected);
         }
 
-        private void ThenTheResponseShouldBe(FileConfiguration expected)
+        private void ThenTheResponseShouldBe(FileConfiguration expecteds)
         {
             var response = JsonConvert.DeserializeObject<FileConfiguration>(_response.Content.ReadAsStringAsync().Result);
 
-            response.GlobalConfiguration.AdministrationPath.ShouldBe(expected.GlobalConfiguration.AdministrationPath);
-            response.GlobalConfiguration.RequestIdKey.ShouldBe(expected.GlobalConfiguration.RequestIdKey);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Host);
-            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expected.GlobalConfiguration.ServiceDiscoveryProvider.Port);
+            response.GlobalConfiguration.RequestIdKey.ShouldBe(expecteds.GlobalConfiguration.RequestIdKey);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Host.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Host);
+            response.GlobalConfiguration.ServiceDiscoveryProvider.Port.ShouldBe(expecteds.GlobalConfiguration.ServiceDiscoveryProvider.Port);
 
             for (var i = 0; i < response.ReRoutes.Count; i++)
             {
-                response.ReRoutes[i].DownstreamHost.ShouldBe(expected.ReRoutes[i].DownstreamHost);
-                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expected.ReRoutes[i].DownstreamPathTemplate);
-                response.ReRoutes[i].DownstreamPort.ShouldBe(expected.ReRoutes[i].DownstreamPort);
-                response.ReRoutes[i].DownstreamScheme.ShouldBe(expected.ReRoutes[i].DownstreamScheme);
-                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expected.ReRoutes[i].UpstreamPathTemplate);
-                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expected.ReRoutes[i].UpstreamHttpMethod);
+                for (var j = 0; j < response.ReRoutes[i].DownstreamHostAndPorts.Count; j++)
+                {
+                    var result = response.ReRoutes[i].DownstreamHostAndPorts[j];
+                    var expected = expecteds.ReRoutes[i].DownstreamHostAndPorts[j];
+                    result.Host.ShouldBe(expected.Host);
+                    result.Port.ShouldBe(expected.Port);
+                }
+
+                response.ReRoutes[i].DownstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].DownstreamPathTemplate);
+                response.ReRoutes[i].DownstreamScheme.ShouldBe(expecteds.ReRoutes[i].DownstreamScheme);
+                response.ReRoutes[i].UpstreamPathTemplate.ShouldBe(expecteds.ReRoutes[i].UpstreamPathTemplate);
+                response.ReRoutes[i].UpstreamHttpMethod.ShouldBe(expecteds.ReRoutes[i].UpstreamHttpMethod);
             }
         }
 
@@ -356,9 +387,7 @@ namespace Ocelot.IntegrationTests
                 new KeyValuePair<string, string>("client_id", "admin"),
                 new KeyValuePair<string, string>("client_secret", "secret"),
                 new KeyValuePair<string, string>("scope", "admin"),
-                new KeyValuePair<string, string>("username", "admin"),
-                new KeyValuePair<string, string>("password", "secret"),
-                new KeyValuePair<string, string>("grant_type", "password")
+                new KeyValuePair<string, string>("grant_type", "client_credentials")
             };
             var content = new FormUrlEncodedContent(formData);
 
@@ -380,7 +409,7 @@ namespace Ocelot.IntegrationTests
                 .ConfigureServices(x => {
                     x.AddSingleton(_webHostBuilder);
                 })
-                .UseStartup<Startup>();
+                .UseStartup<IntegrationTestsStartup>();
 
               _builder = _webHostBuilder.Build();
 

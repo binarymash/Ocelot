@@ -23,10 +23,10 @@ namespace Ocelot.UnitTests.LoadBalancer
     {
         private readonly Mock<ILoadBalancerHouse> _loadBalancerHouse;
         private readonly Mock<ILoadBalancer> _loadBalancer;
-        private HostAndPort _hostAndPort;
+        private ServiceHostAndPort _hostAndPort;
         private OkResponse<DownstreamRoute> _downstreamRoute;
         private ErrorResponse<ILoadBalancer> _getLoadBalancerHouseError;
-        private ErrorResponse<HostAndPort> _getHostAndPortError;
+        private ErrorResponse<ServiceHostAndPort> _getHostAndPortError;
         private HttpRequestMessage _downstreamRequest;
         private ServiceProviderConfiguration _config;
 
@@ -47,7 +47,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_call_scoped_data_repository_correctly()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
@@ -68,7 +68,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_load_balancer()
         {         
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
@@ -88,7 +88,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         [Fact]
         public void should_set_pipeline_error_if_cannot_get_least()
         {
-            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.UrlPathPlaceholderNameAndValue>(),
+            var downstreamRoute = new DownstreamRoute(new List<Ocelot.DownstreamRouteFinder.UrlMatcher.PlaceholderNameAndValue>(),
                 new ReRouteBuilder()
                     .WithUpstreamHttpMethod(new List<string> { "Get" })
                     .Build());
@@ -133,7 +133,7 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenTheLoadBalancerReturnsAnError()
         {
-            _getHostAndPortError = new ErrorResponse<HostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for bah") });
+            _getHostAndPortError = new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for bah") });
              _loadBalancer
                 .Setup(x => x.Lease())
                 .ReturnsAsync(_getHostAndPortError);
@@ -141,10 +141,10 @@ namespace Ocelot.UnitTests.LoadBalancer
 
         private void GivenTheLoadBalancerReturns()
         {
-            _hostAndPort = new HostAndPort("127.0.0.1", 80);
+            _hostAndPort = new ServiceHostAndPort("127.0.0.1", 80);
             _loadBalancer
                 .Setup(x => x.Lease())
-                .ReturnsAsync(new OkResponse<HostAndPort>(_hostAndPort));
+                .ReturnsAsync(new OkResponse<ServiceHostAndPort>(_hostAndPort));
         }
 
         private void GivenTheDownStreamRouteIs(DownstreamRoute downstreamRoute)

@@ -36,19 +36,22 @@ namespace Ocelot.DownstreamRouteFinder.Middleware
         {
             var upstreamUrlPath = context.Request.Path.ToString();
 
-            //todo make this getting config its own middleware one day?
+            var upstreamHost = context.Request.Headers["Host"];
+
             var configuration = await _configProvider.Get(); 
+            
             if(configuration.IsError)
             {
                 _logger.LogError($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 SetPipelineError(configuration.Errors);
+                return;
             }
 
             SetServiceProviderConfigurationForThisRequest(configuration.Data.ServiceProviderConfiguration);
 
             _logger.LogDebug("upstream url path is {upstreamUrlPath}", upstreamUrlPath);
 
-            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method, configuration.Data);
+            var downstreamRoute = _downstreamRouteFinder.FindDownstreamRoute(upstreamUrlPath, context.Request.Method, configuration.Data, upstreamHost);
 
             if (downstreamRoute.IsError)
             {

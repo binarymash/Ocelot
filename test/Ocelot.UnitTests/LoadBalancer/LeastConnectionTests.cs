@@ -12,8 +12,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 {
     public class LeastConnectionTests
     {
-        private HostAndPort _hostAndPort;
-        private Response<HostAndPort> _result;
+        private ServiceHostAndPort _hostAndPort;
+        private Response<ServiceHostAndPort> _result;
         private LeastConnection _leastConnection;
         private List<Service> _services;
         private Random _random;
@@ -30,8 +30,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
             };
 
             _services = availableServices;
@@ -47,6 +47,53 @@ namespace Ocelot.UnitTests.LoadBalancer
             Task.WaitAll(tasks);
         }
 
+        [Fact]
+        public void should_handle_service_returning_to_available()
+        {
+            var serviceName = "products";
+
+            var availableServices = new List<Service>
+            {
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+            };
+
+            _leastConnection = new LeastConnection(() => Task.FromResult(availableServices), serviceName);
+
+            var hostAndPortOne = _leastConnection.Lease().Result;
+            hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
+            var hostAndPortTwo = _leastConnection.Lease().Result;
+            hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.2");
+            _leastConnection.Release(hostAndPortOne.Data);
+            _leastConnection.Release(hostAndPortTwo.Data);
+
+            availableServices = new List<Service>
+            {
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+            };
+
+            hostAndPortOne = _leastConnection.Lease().Result;
+            hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
+            hostAndPortTwo = _leastConnection.Lease().Result;
+            hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.1");
+            _leastConnection.Release(hostAndPortOne.Data);
+            _leastConnection.Release(hostAndPortTwo.Data);
+
+            availableServices = new List<Service>
+            {
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+            };
+
+            hostAndPortOne = _leastConnection.Lease().Result;
+            hostAndPortOne.Data.DownstreamHost.ShouldBe("127.0.0.1");
+            hostAndPortTwo = _leastConnection.Lease().Result;
+            hostAndPortTwo.Data.DownstreamHost.ShouldBe("127.0.0.2");
+            _leastConnection.Release(hostAndPortOne.Data);
+            _leastConnection.Release(hostAndPortTwo.Data);
+
+        }
+
         private async Task LeaseDelayAndRelease()
         {
             var hostAndPort = await _leastConnection.Lease();
@@ -59,7 +106,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var serviceName = "products";
 
-            var hostAndPort = new HostAndPort("localhost", 80);
+            var hostAndPort = new ServiceHostAndPort("localhost", 80);
 
             var availableServices = new List<Service>
             {
@@ -80,9 +127,9 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
-                new Service(serviceName, new HostAndPort("127.0.0.3", 80), string.Empty, string.Empty, new string[0])
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.3", 80), string.Empty, string.Empty, new string[0])
             };
 
             _services = availableServices;
@@ -108,8 +155,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
             };
 
             _services = availableServices;
@@ -139,8 +186,8 @@ namespace Ocelot.UnitTests.LoadBalancer
 
             var availableServices = new List<Service>
             {
-                new Service(serviceName, new HostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
-                new Service(serviceName, new HostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.1", 80), string.Empty, string.Empty, new string[0]),
+                new Service(serviceName, new ServiceHostAndPort("127.0.0.2", 80), string.Empty, string.Empty, new string[0]),
             };
 
             _services = availableServices;
@@ -175,7 +222,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var serviceName = "products";
 
-            var hostAndPort = new HostAndPort("localhost", 80);
+            var hostAndPort = new ServiceHostAndPort("localhost", 80);
                this.Given(x => x.GivenAHostAndPort(hostAndPort))
                 .And(x => x.GivenTheLoadBalancerStarts(null, serviceName))
                 .When(x => x.WhenIGetTheNextHostAndPort())
@@ -188,7 +235,7 @@ namespace Ocelot.UnitTests.LoadBalancer
         {
             var serviceName = "products";
 
-            var hostAndPort = new HostAndPort("localhost", 80);
+            var hostAndPort = new ServiceHostAndPort("localhost", 80);
                this.Given(x => x.GivenAHostAndPort(hostAndPort))
                 .And(x => x.GivenTheLoadBalancerStarts(new List<Service>(), serviceName))
                 .When(x => x.WhenIGetTheNextHostAndPort())
@@ -219,7 +266,7 @@ namespace Ocelot.UnitTests.LoadBalancer
             GivenTheLoadBalancerStarts(services, serviceName);
         }
 
-        private void GivenAHostAndPort(HostAndPort hostAndPort)
+        private void GivenAHostAndPort(ServiceHostAndPort hostAndPort)
         {
             _hostAndPort = hostAndPort;
         }
