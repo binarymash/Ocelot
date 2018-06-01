@@ -8,32 +8,30 @@ using Ocelot.Responses;
 using TestStack.BDDfy;
 using Xunit;
 using Shouldly;
-using Ocelot.Configuration.Provider;
-using Microsoft.Extensions.DependencyInjection;
 using Ocelot.Raft;
 using Rafty.Concensus;
-using Newtonsoft.Json;
-using Rafty.FiniteStateMachine;
 using Ocelot.Configuration;
 
 namespace Ocelot.UnitTests.Controllers
 {
+    using Ocelot.Configuration.Repository;
+
     public class FileConfigurationControllerTests
     {
-        private FileConfigurationController _controller;
-        private Mock<IFileConfigurationProvider> _configGetter;
-        private Mock<IFileConfigurationSetter> _configSetter;
+        private readonly FileConfigurationController _controller;
+        private readonly Mock<IFileConfigurationRepository> _repo;
+        private readonly Mock<IFileConfigurationSetter> _setter;
         private IActionResult _result;
         private FileConfiguration _fileConfiguration;
-        private Mock<IServiceProvider> _provider;
+        private readonly Mock<IServiceProvider> _provider;
         private Mock<INode> _node;
 
         public FileConfigurationControllerTests()
         {
             _provider = new Mock<IServiceProvider>();
-            _configGetter = new Mock<IFileConfigurationProvider>();
-            _configSetter = new Mock<IFileConfigurationSetter>();
-            _controller = new FileConfigurationController(_configGetter.Object, _configSetter.Object, _provider.Object);
+            _repo = new Mock<IFileConfigurationRepository>();
+            _setter = new Mock<IFileConfigurationSetter>();
+            _controller = new FileConfigurationController(_repo.Object, _setter.Object, _provider.Object);
         }
         
         [Fact]
@@ -111,7 +109,6 @@ namespace Ocelot.UnitTests.Controllers
                 .BDDfy();
         }
 
-
         private void ThenTheNodeIsCalledCorrectly()
         {
             _node.Verify(x => x.Accept(It.IsAny<UpdateFileConfiguration>()), Times.Once);
@@ -129,26 +126,26 @@ namespace Ocelot.UnitTests.Controllers
         {
             _node
                 .Setup(x => x.Accept(It.IsAny<UpdateFileConfiguration>()))
-                .Returns(new Rafty.Concensus.OkResponse<UpdateFileConfiguration>(new UpdateFileConfiguration(new FileConfiguration())));
+                .ReturnsAsync(new Rafty.Concensus.OkResponse<UpdateFileConfiguration>(new UpdateFileConfiguration(new FileConfiguration())));
         }
 
         private void GivenTheNodeReturnsError()
         {
             _node
                 .Setup(x => x.Accept(It.IsAny<UpdateFileConfiguration>()))
-                .Returns(new Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>("error", new UpdateFileConfiguration(new FileConfiguration())));
+                .ReturnsAsync(new Rafty.Concensus.ErrorResponse<UpdateFileConfiguration>("error", new UpdateFileConfiguration(new FileConfiguration())));
         }
 
         private void GivenTheConfigSetterReturns(Response response)
         {
-            _configSetter
+            _setter
                 .Setup(x => x.Set(It.IsAny<FileConfiguration>()))
                 .ReturnsAsync(response);
         }
 
         private void ThenTheConfigrationSetterIsCalledCorrectly()
         {
-            _configSetter
+            _setter
                 .Verify(x => x.Set(_fileConfiguration), Times.Once);
         }
 
@@ -169,7 +166,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void GivenTheGetConfigurationReturns(Ocelot.Responses.Response<FileConfiguration> fileConfiguration)
         {
-            _configGetter
+            _repo
                 .Setup(x => x.Get())
                 .ReturnsAsync(fileConfiguration);
         }
@@ -181,7 +178,7 @@ namespace Ocelot.UnitTests.Controllers
 
         private void TheTheGetFileConfigurationIsCalledCorrectly()
         {
-               _configGetter
+               _repo
                 .Verify(x => x.Get(), Times.Once);
         }
 

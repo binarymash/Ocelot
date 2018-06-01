@@ -39,7 +39,7 @@ namespace Ocelot.AcceptanceTests
                                 new FileHostAndPort
                                 {
                                     Host = "localhost",
-                                    Port = 51879,
+                                    Port = 51875,
                                 }
                             },
                             UpstreamPathTemplate = "/",
@@ -49,7 +49,7 @@ namespace Ocelot.AcceptanceTests
                     }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51875", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -57,7 +57,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_return_response_200_with_simple_url_and_hosts_match_multiple_re_routes()
@@ -75,7 +74,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51875,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -101,7 +100,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51875", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -142,7 +141,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51875,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -152,7 +151,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51875", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -192,7 +191,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51875,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -202,7 +201,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51875", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))
@@ -227,7 +226,7 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51875,
                             }
                         },
                         UpstreamPathTemplate = "/",
@@ -237,7 +236,7 @@ namespace Ocelot.AcceptanceTests
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51875", "/", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/"))

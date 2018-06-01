@@ -42,9 +42,15 @@ namespace Ocelot.UnitTests.Responder
         [InlineData(OcelotErrorCode.RequestTimedOutError)]
         public void should_return_service_unavailable(OcelotErrorCode errorCode)
         {
-            ShouldMapErrorToStatusCode(OcelotErrorCode.RequestTimedOutError, HttpStatusCode.ServiceUnavailable);
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.ServiceUnavailable);
         }
 
+        [Theory]
+        [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
+        public void should_return_internal_server_error(OcelotErrorCode errorCode)
+        {
+            ShouldMapErrorToStatusCode(errorCode, HttpStatusCode.InternalServerError);
+        }
 
         [Theory]
         [InlineData(OcelotErrorCode.CannotAddDataError)]
@@ -61,7 +67,6 @@ namespace Ocelot.UnitTests.Responder
         [InlineData(OcelotErrorCode.RateLimitOptionsError)]
         [InlineData(OcelotErrorCode.ServicesAreEmptyError)]
         [InlineData(OcelotErrorCode.ServicesAreNullError)]
-        [InlineData(OcelotErrorCode.UnableToCompleteRequestError)]
         [InlineData(OcelotErrorCode.UnableToCreateAuthenticationHandlerError)]
         [InlineData(OcelotErrorCode.UnableToFindDownstreamRouteError)]
         [InlineData(OcelotErrorCode.UnableToFindLoadBalancerError)]
@@ -121,7 +126,7 @@ namespace Ocelot.UnitTests.Responder
             // If this test fails then it's because the number of error codes has changed.
             // You should make the appropriate changes to the test cases here to ensure
             // they cover all the error codes, and then modify this assertion.
-            Enum.GetNames(typeof(OcelotErrorCode)).Length.ShouldBe(33, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
+            Enum.GetNames(typeof(OcelotErrorCode)).Length.ShouldBe(35, "Looks like the number of error codes has changed. Do you need to modify ErrorsToHttpStatusCodeMapper?");
         }
 
         private void ShouldMapErrorToStatusCode(OcelotErrorCode errorCode, HttpStatusCode expectedHttpStatusCode)

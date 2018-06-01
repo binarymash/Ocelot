@@ -5,53 +5,80 @@ using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System;
+using System.Linq;
+using Ocelot.DownstreamRouteFinder.Middleware;
+using Ocelot.Responses;
+using Ocelot.Values;
 
 namespace Ocelot.DownstreamUrlCreator.Middleware
 {
     public class DownstreamUrlCreatorMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
+        private readonly OcelotRequestDelegate _next;
         private readonly IDownstreamPathPlaceholderReplacer _replacer;
-        private readonly IOcelotLogger _logger;
-        private readonly IUrlBuilder _urlBuilder;
 
-        public DownstreamUrlCreatorMiddleware(RequestDelegate next,
+        public DownstreamUrlCreatorMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IDownstreamPathPlaceholderReplacer replacer,
-            IRequestScopedDataRepository requestScopedDataRepository, 
-            IUrlBuilder urlBuilder)
-            :base(requestScopedDataRepository)
+            IDownstreamPathPlaceholderReplacer replacer)
+                :base(loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>())
         {
             _next = next;
             _replacer = replacer;
-            _urlBuilder = urlBuilder;
-            _logger = loggerFactory.CreateLogger<DownstreamUrlCreatorMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
             var dsPath = _replacer
-                .Replace(DownstreamRoute.ReRoute.DownstreamPathTemplate, DownstreamRoute.TemplatePlaceholderNameAndValues);
+                .Replace(context.DownstreamReRoute.DownstreamPathTemplate, context.TemplatePlaceholderNameAndValues);
 
             if (dsPath.IsError)
             {
-                _logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
+                Logger.LogDebug("IDownstreamPathPlaceholderReplacer returned an error, setting pipeline error");
 
-                SetPipelineError(dsPath.Errors);
+                SetPipelineError(context, dsPath.Errors);
                 return;
             }
 
-            var uriBuilder = new UriBuilder(DownstreamRequest.RequestUri)
+            context.DownstreamRequest.Scheme = context.DownstreamReRoute.DownstreamScheme;
+
+            if (ServiceFabricRequest(context))
             {
-                Path = dsPath.Data.Value,
-                Scheme = DownstreamRoute.ReRoute.DownstreamScheme
-            };
+                var pathAndQuery = CreateServiceFabricUri(context, dsPath);
+                context.DownstreamRequest.AbsolutePath = pathAndQuery.path;
+                context.DownstreamRequest.Query = pathAndQuery.query;
+            }
+            else
+            {
+                context.DownstreamRequest.AbsolutePath = dsPath.Data.Value;
+            }
 
-            DownstreamRequest.RequestUri = uriBuilder.Uri;
-
-            _logger.LogDebug("downstream url is {downstreamUrl.Data.Value}", DownstreamRequest.RequestUri);
+            Logger.LogDebug($"Downstream url is {context.DownstreamRequest}");
 
             await _next.Invoke(context);
+        }
+
+        private (string path, string query) CreateServiceFabricUri(DownstreamContext context, Response<DownstreamPath> dsPath)
+        {
+            var query = context.DownstreamRequest.Query;           
+            var serviceFabricPath = $"/{context.DownstreamReRoute.ServiceName + dsPath.Data.Value}";
+
+            if (RequestForStatefullService(query))
+            {
+                return (serviceFabricPath, query);
+            }
+
+            var split = string.IsNullOrEmpty(query) ? "?" : "&";
+            return (serviceFabricPath, $"{query}{split}cmd=instance");
+        }
+
+        private static bool ServiceFabricRequest(DownstreamContext context)
+        {
+            return context.Configuration.ServiceProviderConfiguration.Type == "ServiceFabric" && context.DownstreamReRoute.UseServiceDiscovery;
+        }
+
+        private static bool RequestForStatefullService(string query)
+        {
+            return query.Contains("PartitionKind") && query.Contains("PartitionKey");
         }
     }
 }

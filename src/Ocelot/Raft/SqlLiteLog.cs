@@ -5,9 +5,11 @@ using Newtonsoft.Json;
 using System;
 using Rafty.Infrastructure;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Ocelot.Raft
 {
+    //todo - use async await
     [ExcludeFromCoverage]
     public class SqlLiteLog : ILog
     {
@@ -24,6 +26,7 @@ namespace Ocelot.Raft
                     FileStream fs = File.Create(_path);
                     fs.Dispose();
                 }
+
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
@@ -39,86 +42,80 @@ namespace Ocelot.Raft
             }
         }
 
-        public int LastLogIndex
+        public Task<int> LastLogIndex()
         {
-            get
+            lock(_lock)
             {
-                lock(_lock)
+                var result = 1;
+                using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
-                    var result = 1;
-                    using(var connection = new SqliteConnection($"Data Source={_path};"))
+                    connection.Open();
+                    var sql = @"select id from logs order by id desc limit 1";
+                    using(var command = new SqliteCommand(sql, connection))
                     {
-                        connection.Open();
-                        var sql = @"select id from logs order by id desc limit 1";
-                        using(var command = new SqliteCommand(sql, connection))
+                        var index = Convert.ToInt32(command.ExecuteScalar());
+                        if(index > result)
                         {
-                            var index = Convert.ToInt32(command.ExecuteScalar());
-                            if(index > result)
-                            {
-                                result = index;
-                            }
+                            result = index;
                         }
                     }
-                    return result;
                 }
+
+                return Task.FromResult(result);
             }
         }
 
-        public long LastLogTerm 
+        public Task<long> LastLogTerm ()
         {
-            get
+            lock(_lock)
             {
-                lock(_lock)
+                long result = 0;
+                using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
-                    long result = 0;
-                    using(var connection = new SqliteConnection($"Data Source={_path};"))
+                    connection.Open();
+                    var sql = @"select data from logs order by id desc limit 1";
+                    using(var command = new SqliteCommand(sql, connection))
                     {
-                        connection.Open();
-                        var sql = @"select data from logs order by id desc limit 1";
-                        using(var command = new SqliteCommand(sql, connection))
+                        var data = Convert.ToString(command.ExecuteScalar());
+                        var jsonSerializerSettings = new JsonSerializerSettings() { 
+                            TypeNameHandling = TypeNameHandling.All
+                        };
+                        var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
+                        if(log != null && log.Term > result)
                         {
-                            var data = Convert.ToString(command.ExecuteScalar());
-                            var jsonSerializerSettings = new JsonSerializerSettings() { 
-                                TypeNameHandling = TypeNameHandling.All
-                            };
-                            var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
-                            if(log != null && log.Term > result)
-                            {
-                                result = log.Term;
-                            }
+                            result = log.Term;
                         }
                     }
-                    return result;
                 }
+
+                return Task.FromResult(result);
             }
         }
 
-        public int Count 
+        public Task<int> Count ()
         {
-            get 
+            lock(_lock)
             {
-                lock(_lock)
+                var result = 0;
+                using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
-                    var result = 0;
-                    using(var connection = new SqliteConnection($"Data Source={_path};"))
+                    connection.Open();
+                    var sql = @"select count(id) from logs";
+                    using(var command = new SqliteCommand(sql, connection))
                     {
-                        connection.Open();
-                        var sql = @"select count(id) from logs";
-                        using(var command = new SqliteCommand(sql, connection))
+                        var index = Convert.ToInt32(command.ExecuteScalar());
+                        if(index > result)
                         {
-                            var index = Convert.ToInt32(command.ExecuteScalar());
-                            if(index > result)
-                            {
-                                result = index;
-                            }
+                            result = index;
                         }
                     }
-                    return result;
                 }
+
+                return Task.FromResult(result);
             }
         }
 
-        public int Apply(LogEntry log)
+        public Task<int> Apply(LogEntry log)
         {
             lock(_lock)
             {
@@ -129,6 +126,7 @@ namespace Ocelot.Raft
                         TypeNameHandling = TypeNameHandling.All
                     };
                     var data = JsonConvert.SerializeObject(log, jsonSerializerSettings);
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"insert into logs (data) values ('{data}')";
                     using(var command = new SqliteCommand(sql, connection))
@@ -140,19 +138,20 @@ namespace Ocelot.Raft
                     using(var command = new SqliteCommand(sql, connection))
                     {
                         var result = command.ExecuteScalar();
-                        return Convert.ToInt32(result);
+                        return Task.FromResult(Convert.ToInt32(result));
                     }   
                 }
             }
         }
 
-        public void DeleteConflictsFromThisLog(int index, LogEntry logEntry)
+        public Task DeleteConflictsFromThisLog(int index, LogEntry logEntry)
         {
             lock(_lock)
             {
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index};";
                     using(var command = new SqliteCommand(sql, connection))
@@ -168,21 +167,24 @@ namespace Ocelot.Raft
                             var deleteSql = $"delete from logs where id >= {index};";
                             using(var deleteCommand = new SqliteCommand(deleteSql, connection))
                             {
-                            var result = deleteCommand.ExecuteNonQuery();
+                                var result = deleteCommand.ExecuteNonQuery();
                             }
                         }
                     }
                 }
             }
+
+            return Task.CompletedTask;
         }
 
-        public LogEntry Get(int index)
+        public Task<LogEntry> Get(int index)
         {
             lock(_lock)
             {
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -192,13 +194,13 @@ namespace Ocelot.Raft
                             TypeNameHandling = TypeNameHandling.All
                         };
                         var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
-                        return log;
+                        return Task.FromResult(log);
                     }
                 }
             }
         }
 
-        public System.Collections.Generic.List<(int index, LogEntry logEntry)> GetFrom(int index)
+        public Task<List<(int index, LogEntry logEntry)>> GetFrom(int index)
         {
             lock(_lock)
             {
@@ -207,6 +209,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select id, data from logs where id >= {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -222,18 +225,16 @@ namespace Ocelot.Raft
                                 };
                                 var log = JsonConvert.DeserializeObject<LogEntry>(data, jsonSerializerSettings);
                                 logsToReturn.Add((id, log));
-
                             }
                         }
                     }
                 }
 
-                return logsToReturn;
-            }
-          
+                return Task.FromResult(logsToReturn);
+            }        
         }
 
-        public long GetTermAtIndex(int index)
+        public Task<long> GetTermAtIndex(int index)
         {
             lock(_lock)
             {
@@ -241,6 +242,7 @@ namespace Ocelot.Raft
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var sql = $"select data from logs where id = {index}";
                     using(var command = new SqliteCommand(sql, connection))
@@ -256,16 +258,19 @@ namespace Ocelot.Raft
                         }
                     }
                 }
-                return result;
+
+                return Task.FromResult(result);
             }
         }
-        public void Remove(int indexOfCommand)
+
+        public Task Remove(int indexOfCommand)
         {
             lock(_lock)
             {
                 using(var connection = new SqliteConnection($"Data Source={_path};"))
                 {
                     connection.Open();
+                    
                     //todo - sql injection dont copy this..
                     var deleteSql = $"delete from logs where id >= {indexOfCommand};";
                     using(var deleteCommand = new SqliteCommand(deleteSql, connection))
@@ -274,6 +279,8 @@ namespace Ocelot.Raft
                     }
                 }
             }
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
 using Ocelot.Configuration.Repository;
@@ -14,14 +12,14 @@ namespace Ocelot.UnitTests.Configuration
 {
     public class InMemoryConfigurationRepositoryTests
     {
-        private readonly InMemoryOcelotConfigurationRepository _repo;
-        private IOcelotConfiguration _config;
+        private readonly InMemoryInternalConfigurationRepository _repo;
+        private IInternalConfiguration _config;
         private Response _result;
-        private Response<IOcelotConfiguration> _getResult;
+        private Response<IInternalConfiguration> _getResult;
 
         public InMemoryConfigurationRepositoryTests()
         {
-            _repo = new InMemoryOcelotConfigurationRepository();
+            _repo = new InMemoryInternalConfigurationRepository();
         }
 
         [Fact]
@@ -44,12 +42,12 @@ namespace Ocelot.UnitTests.Configuration
 
         private void ThenTheConfigurationIsReturned()
         {
-            _getResult.Data.ReRoutes[0].DownstreamPathTemplate.Value.ShouldBe("initial");
+            _getResult.Data.ReRoutes[0].DownstreamReRoute[0].DownstreamPathTemplate.Value.ShouldBe("initial");
         }
 
         private void WhenIGetTheConfiguration()
         {
-            _getResult = _repo.Get().Result;
+            _getResult = _repo.Get();
         }
 
         private void GivenThereIsASavedConfiguration()
@@ -58,14 +56,14 @@ namespace Ocelot.UnitTests.Configuration
             WhenIAddOrReplaceTheConfig();
         }
 
-        private void GivenTheConfigurationIs(IOcelotConfiguration config)
+        private void GivenTheConfigurationIs(IInternalConfiguration config)
         {
             _config = config;
         }
 
         private void WhenIAddOrReplaceTheConfig()
         {
-            _result = _repo.AddOrReplace(_config).Result;
+            _result = _repo.AddOrReplace(_config);
         }
 
         private void ThenNoErrorsAreReturned()
@@ -73,7 +71,7 @@ namespace Ocelot.UnitTests.Configuration
             _result.IsError.ShouldBeFalse();
         }
 
-        class FakeConfig : IOcelotConfiguration
+        class FakeConfig : IInternalConfiguration
         {
             private readonly string _downstreamTemplatePath;
 
@@ -83,19 +81,34 @@ namespace Ocelot.UnitTests.Configuration
                 AdministrationPath = administrationPath;
             }
 
-            public List<ReRoute> ReRoutes => new List<ReRoute>
+            public List<ReRoute> ReRoutes
             {
-                new ReRouteBuilder()
-                .WithDownstreamPathTemplate(_downstreamTemplatePath)
-                .WithUpstreamHttpMethod(new List<string> { "Get" })
-                .Build()
-            };
+                get
+                {
+                    var downstreamReRoute = new DownstreamReRouteBuilder()
+                        .WithDownstreamPathTemplate(_downstreamTemplatePath)
+                        .WithUpstreamHttpMethod(new List<string> { "Get" })
+                        .Build();
+
+                    return new List<ReRoute>
+                    {
+                        new ReRouteBuilder()
+                            .WithDownstreamReRoute(downstreamReRoute)
+                            .WithUpstreamHttpMethod(new List<string> {"Get"})
+                            .Build()
+                    };
+                }
+            }
 
             public string AdministrationPath {get;}
 
             public ServiceProviderConfiguration ServiceProviderConfiguration => throw new NotImplementedException();
 
             public string RequestId {get;}
+            public LoadBalancerOptions LoadBalancerOptions { get; }
+            public string DownstreamScheme { get; }
+            public QoSOptions QoSOptions { get; }
+            public HttpHandlerOptions HttpHandlerOptions { get; }
         }
     }
 }

@@ -2,97 +2,99 @@
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 using System.IO;
+using Ocelot.Middleware.Multiplexer;
 
 namespace Ocelot.Cache.Middleware
 {
     public class OutputCacheMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly IOcelotLogger _logger;
+        private readonly OcelotRequestDelegate _next;
         private readonly IOcelotCache<CachedResponse> _outputCache;
         private readonly IRegionCreator _regionCreator;
 
-        public OutputCacheMiddleware(RequestDelegate next,
+        public OutputCacheMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository scopedDataRepository,
             IOcelotCache<CachedResponse> outputCache,
             IRegionCreator regionCreator)
-            : base(scopedDataRepository)
+                :base(loggerFactory.CreateLogger<OutputCacheMiddleware>())
         {
             _next = next;
             _outputCache = outputCache;
-            _logger = loggerFactory.CreateLogger<OutputCacheMiddleware>();
             _regionCreator = regionCreator;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
-            if (!DownstreamRoute.ReRoute.IsCached)
+            if (!context.DownstreamReRoute.IsCached)
             {
                 await _next.Invoke(context);
                 return;
             }
 
-            var downstreamUrlKey = $"{DownstreamRequest.Method.Method}-{DownstreamRequest.RequestUri.OriginalString}";
+            var downstreamUrlKey = $"{context.DownstreamRequest.Method}-{context.DownstreamRequest.OriginalString}";
 
-            _logger.LogDebug("started checking cache for {downstreamUrlKey}", downstreamUrlKey);
+            Logger.LogDebug($"Started checking cache for {downstreamUrlKey}");
 
-            var cached = _outputCache.Get(downstreamUrlKey, DownstreamRoute.ReRoute.CacheOptions.Region);
+            var cached = _outputCache.Get(downstreamUrlKey, context.DownstreamReRoute.CacheOptions.Region);
 
             if (cached != null)
             {
-                _logger.LogDebug("cache entry exists for {downstreamUrlKey}", downstreamUrlKey);
+                Logger.LogDebug($"cache entry exists for {downstreamUrlKey}");
 
                 var response = CreateHttpResponseMessage(cached);
-                SetHttpResponseMessageThisRequest(response);
+                SetHttpResponseMessageThisRequest(context, response);
 
-                _logger.LogDebug("finished returned cached response for {downstreamUrlKey}", downstreamUrlKey);
+                Logger.LogDebug($"finished returned cached response for {downstreamUrlKey}");
 
                 return;
             }
 
-            _logger.LogDebug("no resonse cached for {downstreamUrlKey}", downstreamUrlKey);
+            Logger.LogDebug($"no resonse cached for {downstreamUrlKey}");
 
             await _next.Invoke(context);
 
-            if (PipelineError)
+            if (context.IsError)
             {
-                _logger.LogDebug("there was a pipeline error for {downstreamUrlKey}", downstreamUrlKey);
+                Logger.LogDebug($"there was a pipeline error for {downstreamUrlKey}");
 
                 return;
             }
 
-            cached = await CreateCachedResponse(HttpResponseMessage);
+            cached = await CreateCachedResponse(context.DownstreamResponse);
 
-            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(DownstreamRoute.ReRoute.CacheOptions.TtlSeconds), DownstreamRoute.ReRoute.CacheOptions.Region);
+            _outputCache.Add(downstreamUrlKey, cached, TimeSpan.FromSeconds(context.DownstreamReRoute.CacheOptions.TtlSeconds), context.DownstreamReRoute.CacheOptions.Region);
 
-            _logger.LogDebug("finished response added to cache for {downstreamUrlKey}", downstreamUrlKey);
+            Logger.LogDebug($"finished response added to cache for {downstreamUrlKey}");
         }
 
-        internal HttpResponseMessage CreateHttpResponseMessage(CachedResponse cached)
+        private void SetHttpResponseMessageThisRequest(DownstreamContext context, DownstreamResponse response)
+        {
+            context.DownstreamResponse = response;
+        }
+
+        internal DownstreamResponse CreateHttpResponseMessage(CachedResponse cached)
         {
             if (cached == null)
             {
                 return null;
             }
 
-            var response = new HttpResponseMessage(cached.StatusCode);
-            foreach (var header in cached.Headers)
-            {
-                response.Headers.Add(header.Key, header.Value);
-            }
             var content = new MemoryStream(Convert.FromBase64String(cached.Body));
-            response.Content = new StreamContent(content);
 
-            return response;
+            var streamContent = new StreamContent(content);
+
+            foreach (var header in cached.ContentHeaders)
+            {
+                streamContent.Headers.Add(header.Key, header.Value);
+            }
+
+            return new DownstreamResponse(streamContent, cached.StatusCode, cached.Headers.ToList());
         }
 
-        internal async Task<CachedResponse> CreateCachedResponse(HttpResponseMessage response)
+        internal async Task<CachedResponse> CreateCachedResponse(DownstreamResponse response)
         {
             if (response == null)
             {
@@ -100,7 +102,7 @@ namespace Ocelot.Cache.Middleware
             }
 
             var statusCode = response.StatusCode;
-            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Value);
+            var headers = response.Headers.ToDictionary(v => v.Key, v => v.Values);
             string body = null;
 
             if (response.Content != null)
@@ -109,7 +111,9 @@ namespace Ocelot.Cache.Middleware
                 body = Convert.ToBase64String(content);
             }
 
-            var cached = new CachedResponse(statusCode, headers, body);
+            var contentHeaders = response?.Content?.Headers.ToDictionary(v => v.Key, v => v.Value);
+
+            var cached = new CachedResponse(statusCode, headers, body, contentHeaders);
             return cached;
         }
     }

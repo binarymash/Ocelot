@@ -20,12 +20,379 @@ namespace Ocelot.UnitTests.Configuration
         private readonly IConfigurationValidator _configurationValidator;
         private FileConfiguration _fileConfiguration;
         private Response<ConfigurationValidationResult> _result;
-        private Mock<IAuthenticationSchemeProvider> _provider;
+        private readonly Mock<IAuthenticationSchemeProvider> _provider;
 
         public ConfigurationFluentValidationTests()
         {
             _provider = new Mock<IAuthenticationSchemeProvider>();
             _configurationValidator = new FileConfigurationFluentValidator(_provider.Object);
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_aggregates_are_valid()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_aggregates_are_duplicate_of_re_routes()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom",
+                            UpstreamHost = "localhost"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "reRoute /tom has duplicate aggregate"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_valid_if_aggregates_are_not_duplicate_of_re_routes()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Post" },
+                            Key = "Tom",
+                            UpstreamHost = "localhost"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsValid())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_aggregates_are_duplicate_of_aggregates()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/lol",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Tom"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        },
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "aggregate /tom has duplicate aggregate"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_re_routes_dont_exist_for_aggregate()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "ReRoutes for aggregateReRoute / either do not exist or do not have correct ServiceName property"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void configuration_is_invalid_if_aggregate_has_re_routes_with_specific_request_id_keys()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51878,
+                                }
+                            },
+                            UpstreamPathTemplate = "/laura",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            Key = "Laura"
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/",
+                            DownstreamScheme = "http",
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 51880,
+                                }
+                            },
+                            UpstreamPathTemplate = "/tom",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            RequestIdKey = "should_fail",
+                            Key = "Tom"
+                        }
+                    },
+                Aggregates = new List<FileAggregateReRoute>
+                    {
+                        new FileAggregateReRoute
+                        {
+                            UpstreamPathTemplate = "/",
+                            UpstreamHost = "localhost",
+                            ReRouteKeys = new List<string>
+                            {
+                                "Tom",
+                                "Laura"
+                            }
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenAConfiguration(configuration))
+                .When(x => x.WhenIValidateTheConfiguration())
+                .Then(x => x.ThenTheResultIsNotValid())
+                .And(x => x.ThenTheErrorMessageAtPositionIs(0, "aggregateReRoute / contains ReRoute with specific RequestIdKey, this is not possible with Aggregates"))
+                .BDDfy();
         }
 
         [Fact]
@@ -221,7 +588,8 @@ namespace Ocelot.UnitTests.Configuration
                         AuthenticationOptions = new FileAuthenticationOptions()
                         {
                             AuthenticationProviderKey = "Test"
-                        }                    }
+                        }                   
+                    }
                 }
             }))
                 .When(x => x.WhenIValidateTheConfiguration())
@@ -502,7 +870,6 @@ namespace Ocelot.UnitTests.Configuration
                 .BDDfy();
         }
 
-
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -614,7 +981,8 @@ namespace Ocelot.UnitTests.Configuration
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery DownstreamHostAndPorts must be set and not empty or Ocelot cannot find your service!"))
                 .BDDfy();
         }
-         [Fact]
+
+        [Fact]
         public void configuration_is_not_valid_when_host_and_port_is_empty()
         {
             this.Given(x => x.GivenAConfiguration(new FileConfiguration
@@ -639,7 +1007,6 @@ namespace Ocelot.UnitTests.Configuration
                  .And(x => x.ThenTheErrorMessageAtPositionIs(0, "When not using service discovery Host must be set on DownstreamHostAndPorts if you are not using ReRoute.Host or Ocelot cannot find your service!"))
                 .BDDfy();
         }
-
 
         private void GivenAConfiguration(FileConfiguration fileConfiguration)
         {

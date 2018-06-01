@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Ocelot.Errors;
+using Ocelot.Middleware;
 using Ocelot.Responses;
 using Ocelot.Values;
 
@@ -22,18 +23,18 @@ namespace Ocelot.LoadBalancer.LoadBalancers
             _leases = new List<Lease>();
         }
 
-        public async Task<Response<ServiceHostAndPort>> Lease()
+        public async Task<Response<ServiceHostAndPort>> Lease(DownstreamContext downstreamContext)
         {
             var services = await _services.Invoke();
 
             if (services == null)
             {
-                return new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreNullError($"services were null for {_serviceName}") });
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreNullError($"services were null for {_serviceName}") );
             }
 
             if (!services.Any())
             {
-                return new ErrorResponse<ServiceHostAndPort>(new List<Error>() { new ServicesAreEmptyError($"services were empty for {_serviceName}") });
+                return new ErrorResponse<ServiceHostAndPort>(new ServicesAreEmptyError($"services were empty for {_serviceName}"));
             }
 
             lock(_syncLock)

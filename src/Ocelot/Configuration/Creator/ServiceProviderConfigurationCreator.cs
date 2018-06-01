@@ -7,12 +7,16 @@ namespace Ocelot.Configuration.Creator
     {
         public ServiceProviderConfiguration Create(FileGlobalConfiguration globalConfiguration)
         {
-            var serviceProviderPort = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+            var port = globalConfiguration?.ServiceDiscoveryProvider?.Port ?? 0;
+            var host = globalConfiguration?.ServiceDiscoveryProvider?.Host ?? "consul";
 
             return new ServiceProviderConfigurationBuilder()
-                    .WithServiceDiscoveryProviderHost(globalConfiguration?.ServiceDiscoveryProvider?.Host)
-                    .WithServiceDiscoveryProviderPort(serviceProviderPort)
-                    .Build();
+                .WithHost(host)
+                .WithPort(port)
+                .WithType(globalConfiguration?.ServiceDiscoveryProvider?.Type)
+                .WithToken(globalConfiguration?.ServiceDiscoveryProvider?.Token)
+                .WithConfigurationKey(globalConfiguration?.ServiceDiscoveryProvider?.ConfigurationKey)
+                .Build();
         }
     }
 }

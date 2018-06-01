@@ -5,9 +5,9 @@ namespace Ocelot.Values
     public class Service
     {
         public Service(string name,
-            ServiceHostAndPort hostAndPort, 
-            string id, 
-            string version, 
+            ServiceHostAndPort hostAndPort,
+            string id,
+            string version,
             IEnumerable<string> tags)
         {
             Name = name;
@@ -16,14 +16,15 @@ namespace Ocelot.Values
             Version = version;
             Tags = tags;
         }
-        public string Id { get; private set; }
 
-        public string Name { get; private set; }
+        public string Id { get; }
 
-        public string Version { get; private set; }
+        public string Name { get; }
 
-        public IEnumerable<string> Tags { get; private set; }
+        public string Version { get; }
 
-        public ServiceHostAndPort HostAndPort { get; private set; }
+        public IEnumerable<string> Tags { get; }
+
+        public ServiceHostAndPort HostAndPort { get; }
     }
 }

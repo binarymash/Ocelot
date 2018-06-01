@@ -1,6 +1,4 @@
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
 using Ocelot.Middleware;
 
@@ -8,35 +6,43 @@ namespace Ocelot.Headers.Middleware
 {
     public class HttpHeadersTransformationMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly IOcelotLogger _logger;
+        private readonly OcelotRequestDelegate _next;
         private readonly IHttpContextRequestHeaderReplacer _preReplacer;
         private readonly IHttpResponseHeaderReplacer _postReplacer;
+        private readonly IAddHeadersToResponse _addHeadersToResponse;
+        private readonly IAddHeadersToRequest _addHeadersToRequest;
 
-        public HttpHeadersTransformationMiddleware(RequestDelegate next,
+        public HttpHeadersTransformationMiddleware(OcelotRequestDelegate next,
             IOcelotLoggerFactory loggerFactory,
-            IRequestScopedDataRepository requestScopedDataRepository,
             IHttpContextRequestHeaderReplacer preReplacer,
-            IHttpResponseHeaderReplacer postReplacer) 
-            : base(requestScopedDataRepository)
+            IHttpResponseHeaderReplacer postReplacer,
+            IAddHeadersToResponse addHeadersToResponse,
+            IAddHeadersToRequest addHeadersToRequest) 
+                :base(loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>())
         {
+            _addHeadersToResponse = addHeadersToResponse;
+            _addHeadersToRequest = addHeadersToRequest;
             _next = next;
             _postReplacer = postReplacer;
             _preReplacer = preReplacer;
-            _logger = loggerFactory.CreateLogger<HttpHeadersTransformationMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
-            var preFAndRs = this.DownstreamRoute.ReRoute.UpstreamHeadersFindAndReplace;
+            var preFAndRs = context.DownstreamReRoute.UpstreamHeadersFindAndReplace;
 
-            _preReplacer.Replace(context, preFAndRs);
+            //todo - this should be on httprequestmessage not httpcontext?
+            _preReplacer.Replace(context.HttpContext, preFAndRs);
+
+            _addHeadersToRequest.SetHeadersOnDownstreamRequest(context.DownstreamReRoute.AddHeadersToUpstream, context.HttpContext);
 
             await _next.Invoke(context);
 
-            var postFAndRs = this.DownstreamRoute.ReRoute.DownstreamHeadersFindAndReplace;
+            var postFAndRs = context.DownstreamReRoute.DownstreamHeadersFindAndReplace;
 
-            _postReplacer.Replace(HttpResponseMessage, postFAndRs, DownstreamRequest);
+            _postReplacer.Replace(context.DownstreamResponse, postFAndRs, context.DownstreamRequest);
+
+            _addHeadersToResponse.Add(context.DownstreamReRoute.AddHeadersToDownstream, context.DownstreamResponse);
         }
     }
 }

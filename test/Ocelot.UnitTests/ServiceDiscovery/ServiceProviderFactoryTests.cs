@@ -3,26 +3,32 @@ using System.Collections.Generic;
 using Moq;
 using Ocelot.Configuration;
 using Ocelot.Configuration.Builder;
+using Ocelot.Infrastructure.Consul;
 using Ocelot.Logging;
 using Ocelot.ServiceDiscovery;
+using Ocelot.ServiceDiscovery.Providers;
 using Shouldly;
 using TestStack.BDDfy;
 using Xunit;
 
 namespace Ocelot.UnitTests.ServiceDiscovery
 {
+    using Pivotal.Discovery.Client;
+
     public class ServiceProviderFactoryTests
     {
         private ServiceProviderConfiguration _serviceConfig;
         private IServiceDiscoveryProvider _result;
         private readonly ServiceDiscoveryProviderFactory _factory;
-        private ReRoute _reRoute;
+        private DownstreamReRoute _reRoute;
         private Mock<IOcelotLoggerFactory> _loggerFactory;
+        private Mock<IDiscoveryClient> _discoveryClient;
 
         public ServiceProviderFactoryTests()
         {
             _loggerFactory = new Mock<IOcelotLoggerFactory>();
-            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object);
+            _discoveryClient = new Mock<IDiscoveryClient>();
+            _factory = new ServiceDiscoveryProviderFactory(_loggerFactory.Object, new ConsulClientFactory(), _discoveryClient.Object);
         }
         
         [Fact]
@@ -31,7 +37,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             var serviceConfig = new ServiceProviderConfigurationBuilder()
                 .Build();
 
-            var reRoute = new ReRouteBuilder().Build();
+            var reRoute = new DownstreamReRouteBuilder().Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
@@ -51,12 +57,65 @@ namespace Ocelot.UnitTests.ServiceDiscovery
                 new DownstreamHostAndPort("abc.com", 80)
             };
 
-            var reRoute = new ReRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
+            var reRoute = new DownstreamReRouteBuilder().WithDownstreamAddresses(downstreamAddresses).Build();
 
             this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
                 .When(x => x.WhenIGetTheServiceProvider())
                 .Then(x => x.ThenTheServiceProviderIs<ConfigurationServiceProvider>())
                 .Then(x => ThenTheFollowingServicesAreReturned(downstreamAddresses))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_consul_service_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<ConsulServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_service_fabric_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType("ServiceFabric")
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<ServiceFabricServiceDiscoveryProvider>())
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_return_eureka_provider()
+        {
+            var reRoute = new DownstreamReRouteBuilder()
+                .WithServiceName("product")
+                .WithUseServiceDiscovery(true)
+                .Build();
+
+            var serviceConfig = new ServiceProviderConfigurationBuilder()
+                .WithType("Eureka")
+                .Build();
+
+            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
+                .When(x => x.WhenIGetTheServiceProvider())
+                .Then(x => x.ThenTheServiceProviderIs<EurekaServiceDiscoveryProvider>())
                 .BDDfy();
         }
 
@@ -75,24 +134,7 @@ namespace Ocelot.UnitTests.ServiceDiscovery
             }
         }
 
-        [Fact]
-        public void should_return_consul_service_provider()
-        {
-            var reRoute = new ReRouteBuilder()
-                .WithServiceName("product")
-                .WithUseServiceDiscovery(true)
-                .Build();
-
-            var serviceConfig = new ServiceProviderConfigurationBuilder()
-                .Build();
-
-            this.Given(x => x.GivenTheReRoute(serviceConfig, reRoute))
-                .When(x => x.WhenIGetTheServiceProvider())
-                .Then(x => x.ThenTheServiceProviderIs<ConsulServiceDiscoveryProvider>())
-                .BDDfy();
-        }
-
-        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig, ReRoute reRoute)
+        private void GivenTheReRoute(ServiceProviderConfiguration serviceConfig, DownstreamReRoute reRoute)
         {
             _serviceConfig = serviceConfig;
             _reRoute = reRoute;

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Primitives;
-using Ocelot.Configuration.Provider;
+using Ocelot.Configuration.Repository;
 using Ocelot.Infrastructure.Extensions;
 using Ocelot.Infrastructure.RequestData;
 using Ocelot.Logging;
@@ -11,87 +9,85 @@ using Ocelot.Middleware;
 
 namespace Ocelot.Errors.Middleware
 {
+    using Configuration;
+
     /// <summary>
     /// Catches all unhandled exceptions thrown by middleware, logs and returns a 500
     /// </summary>
     public class ExceptionHandlerMiddleware : OcelotMiddleware
     {
-        private readonly RequestDelegate _next;
-        private readonly IOcelotLogger _logger;
-        private readonly IRequestScopedDataRepository _requestScopedDataRepository;
-        private readonly IOcelotConfigurationProvider _configProvider;
+        private readonly OcelotRequestDelegate _next;
+        private readonly IInternalConfigurationRepository _configRepo;
+        private readonly IRequestScopedDataRepository _repo;
 
-
-        public ExceptionHandlerMiddleware(RequestDelegate next,
-            IOcelotLoggerFactory loggerFactory, 
-            IRequestScopedDataRepository requestScopedDataRepository,
-            IOcelotConfigurationProvider configProvider)
-            :base(requestScopedDataRepository)
+        public ExceptionHandlerMiddleware(OcelotRequestDelegate next,
+            IOcelotLoggerFactory loggerFactory,
+            IInternalConfigurationRepository configRepo, 
+            IRequestScopedDataRepository repo)
+                : base(loggerFactory.CreateLogger<ExceptionHandlerMiddleware>())
         {
-            _configProvider = configProvider;
+            _configRepo = configRepo;
+            _repo = repo;
             _next = next;
-            _requestScopedDataRepository = requestScopedDataRepository;
-            _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(DownstreamContext context)
         {
             try
-            {               
-                await TrySetGlobalRequestId(context);
-
-                _logger.LogDebug("ocelot pipeline started");
-
-                await _next.Invoke(context);
-
-            }
-            catch (Exception e)
             {
-                _logger.LogDebug("error calling middleware");
-
-                var message = CreateMessage(context, e);
-
-                _logger.LogError(message, e);
-                
-                SetInternalServerErrorOnResponse(context);
-            }
-
-            _logger.LogDebug("ocelot pipeline finished");
-        }
-
-        private async Task TrySetGlobalRequestId(HttpContext context)
-        {
                 //try and get the global request id and set it for logs...
                 //should this basically be immutable per request...i guess it should!
                 //first thing is get config
-                 var configuration = await _configProvider.Get(); 
-            
-                //if error throw to catch below..
-                if(configuration.IsError)
+                var configuration = _configRepo.Get();
+
+                if (configuration.IsError)
                 {
                     throw new Exception($"{MiddlewareName} setting pipeline errors. IOcelotConfigurationProvider returned {configuration.Errors.ToErrorString()}");
                 }
 
-                //else set the request id?
-                var key = configuration.Data.RequestId;
+                TrySetGlobalRequestId(context, configuration.Data);
 
-                StringValues upstreamRequestIds;
-                if (!string.IsNullOrEmpty(key) && context.Request.Headers.TryGetValue(key, out upstreamRequestIds))
-                {
-                    context.TraceIdentifier = upstreamRequestIds.First();
-                    _requestScopedDataRepository.Add<string>("RequestId", context.TraceIdentifier);
-                }
+                context.Configuration = configuration.Data;
+
+                Logger.LogDebug("ocelot pipeline started");
+
+                await _next.Invoke(context);
+            }
+            catch (Exception e)
+            {
+                Logger.LogDebug("error calling middleware");
+
+                var message = CreateMessage(context, e);
+
+                Logger.LogError(message, e);
+                
+                SetInternalServerErrorOnResponse(context);
+            }
+
+            Logger.LogDebug("ocelot pipeline finished");
         }
 
-        private void SetInternalServerErrorOnResponse(HttpContext context)
+        private void TrySetGlobalRequestId(DownstreamContext context, IInternalConfiguration configuration)
         {
-            if (!context.Response.HasStarted)
+            var key = configuration.RequestId;
+
+            if (!string.IsNullOrEmpty(key) && context.HttpContext.Request.Headers.TryGetValue(key, out var upstreamRequestIds))
             {
-                context.Response.StatusCode = 500;
+                context.HttpContext.TraceIdentifier = upstreamRequestIds.First();
+            }
+
+            _repo.Add("RequestId", context.HttpContext.TraceIdentifier);
+        }
+
+        private void SetInternalServerErrorOnResponse(DownstreamContext context)
+        {
+            if (!context.HttpContext.Response.HasStarted)
+            {
+                context.HttpContext.Response.StatusCode = 500;
             }
         }
 
-        private string CreateMessage(HttpContext context, Exception e)
+        private string CreateMessage(DownstreamContext context, Exception e)
         {
             var message =
                 $"Exception caught in global error handler, exception message: {e.Message}, exception stack: {e.StackTrace}";
@@ -101,7 +97,8 @@ namespace Ocelot.Errors.Middleware
                 message =
                     $"{message}, inner exception message {e.InnerException.Message}, inner exception stack {e.InnerException.StackTrace}";
             }
-            return $"{message} RequestId: {context.TraceIdentifier}";
+
+            return $"{message} RequestId: {context.HttpContext.TraceIdentifier}";
         }
     }
 }

@@ -1,13 +1,24 @@
-﻿using Ocelot.Configuration.File;
+﻿using Butterfly.Client.Tracing;
+using Ocelot.Configuration.File;
+using Ocelot.Requester;
 
 namespace Ocelot.Configuration.Creator
 {
     public class HttpHandlerOptionsCreator : IHttpHandlerOptionsCreator
     {
-        public HttpHandlerOptions Create(FileReRoute fileReRoute)
+        private readonly IServiceTracer _tracer;
+
+        public HttpHandlerOptionsCreator(IServiceTracer tracer)
         {
-            return new HttpHandlerOptions(fileReRoute.HttpHandlerOptions.AllowAutoRedirect,
-                fileReRoute.HttpHandlerOptions.UseCookieContainer, fileReRoute.HttpHandlerOptions.UseTracing);
+            _tracer = tracer;
+        }
+
+        public HttpHandlerOptions Create(FileHttpHandlerOptions options)
+        {
+            var useTracing = _tracer.GetType() != typeof(FakeServiceTracer) && options.UseTracing;
+
+            return new HttpHandlerOptions(options.AllowAutoRedirect,
+                options.UseCookieContainer, useTracing);
         }
     }
 }

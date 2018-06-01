@@ -12,7 +12,7 @@ In your ConfigureServices method
 .. code-block:: csharp
 
     services
-        .AddOcelot(Configuration)
+        .AddOcelot()
         .AddOpenTracing(option =>
         {
             //this is the url that the butterfly collector server is running on...
@@ -20,7 +20,7 @@ In your ConfigureServices method
             option.Service = "Ocelot";
         });
 
-Then in your configuration.json add the following to the ReRoute you want to trace..
+Then in your ocelot.json add the following to the ReRoute you want to trace..
 
 .. code-block:: json
 

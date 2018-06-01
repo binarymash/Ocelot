@@ -1,168 +1,77 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Reflection;
-using IdentityServer4.AccessTokenValidation;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
-using Ocelot.Authentication.Middleware;
-using Ocelot.Cache.Middleware;
-using Ocelot.Claims.Middleware;
-using Ocelot.DownstreamRouteFinder.Middleware;
-using Ocelot.DownstreamUrlCreator.Middleware;
-using Ocelot.Errors.Middleware;
-using Ocelot.Headers.Middleware;
-using Ocelot.Logging;
-using Ocelot.QueryStrings.Middleware;
-using Ocelot.Request.Middleware;
-using Ocelot.Requester.Middleware;
-using Ocelot.RequestId.Middleware;
-using Ocelot.Responder.Middleware;
-using Ocelot.RateLimit.Middleware;
-
-namespace Ocelot.Middleware
+﻿namespace Ocelot.Middleware
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Authorisation.Middleware;
     using Microsoft.AspNetCore.Hosting;
-    using Microsoft.AspNetCore.Http;
-    using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Options;
-    using Newtonsoft.Json;
+    using System.Diagnostics;
+    using Microsoft.AspNetCore.Builder;
     using Ocelot.Configuration;
     using Ocelot.Configuration.Creator;
     using Ocelot.Configuration.File;
-    using Ocelot.Configuration.Provider;
     using Ocelot.Configuration.Repository;
     using Ocelot.Configuration.Setter;
-    using Ocelot.LoadBalancer.Middleware;
-    using Ocelot.Raft;
     using Ocelot.Responses;
+    using Ocelot.Logging;
     using Rafty.Concensus;
     using Rafty.Infrastructure;
+    using Ocelot.Middleware.Pipeline;
+    using Pivotal.Discovery.Client;
 
     public static class OcelotMiddlewareExtensions
     {
-        /// <summary>
-        /// Registers the Ocelot default middlewares
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <returns></returns>
         public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder)
         {
-            await builder.UseOcelot(new OcelotMiddlewareConfiguration());
+            await builder.UseOcelot(new OcelotPipelineConfiguration());
 
             return builder;
         }
 
-        /// <summary>
-        /// Registers Ocelot with a combination of default middlewares and optional middlewares in the configuration
-        /// </summary>
-        /// <param name="builder"></param>
-        /// <param name="middlewareConfiguration"></param>
-        /// <returns></returns>
-        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotMiddlewareConfiguration middlewareConfiguration)
+        public static async Task<IApplicationBuilder> UseOcelot(this IApplicationBuilder builder, OcelotPipelineConfiguration pipelineConfiguration)
         {
             var configuration = await CreateConfiguration(builder);
             
-            await CreateAdministrationArea(builder, configuration);
+            CreateAdministrationArea(builder, configuration);
 
             if(UsingRafty(builder))
             {
                 SetUpRafty(builder);
             }
 
+            if (UsingEurekaServiceDiscoveryProvider(configuration))
+            {
+                builder.UseDiscoveryClient();
+            }
+
             ConfigureDiagnosticListener(builder);
 
-            // This is registered to catch any global exceptions that are not handled
-            // It also sets the Request Id if anything is set globally
-            builder.UseExceptionHandlerMiddleware();
+            var pipelineBuilder = new OcelotPipelineBuilder(builder.ApplicationServices);
 
-            // Allow the user to respond with absolutely anything they want.
-            builder.UseIfNotNull(middlewareConfiguration.PreErrorResponderMiddleware);
+            pipelineBuilder.BuildOcelotPipeline(pipelineConfiguration);
 
-            // This is registered first so it can catch any errors and issue an appropriate response
-            builder.UseResponderMiddleware();
+            var firstDelegate = pipelineBuilder.Build();
 
-            // Then we get the downstream route information
-            builder.UseDownstreamRouteFinderMiddleware();
+            /*
+            inject first delegate into first piece of asp.net middleware..maybe not like this
+            then because we are updating the http context in ocelot it comes out correct for
+            rest of asp.net..
+            */
 
-            // Now we have the ds route we can transform headers and stuff?
-            builder.UseHttpHeadersTransformationMiddleware();
+            builder.Properties["analysis.NextMiddlewareName"] = "TransitionToOcelotMiddleware";
 
-            // Initialises downstream request
-            builder.UseDownstreamRequestInitialiser();
-
-            // We check whether the request is ratelimit, and if there is no continue processing
-            builder.UseRateLimiting();
-
-            // This adds or updates the request id (initally we try and set this based on global config in the error handling middleware)
-            // If anything was set at global level and we have a different setting at re route level the global stuff will be overwritten
-            // This means you can get a scenario where you have a different request id from the first piece of middleware to the request id middleware.
-            builder.UseRequestIdMiddleware();
-
-            // Allow pre authentication logic. The idea being people might want to run something custom before what is built in.
-            builder.UseIfNotNull(middlewareConfiguration.PreAuthenticationMiddleware);
-
-            // Now we know where the client is going to go we can authenticate them.
-            // We allow the ocelot middleware to be overriden by whatever the
-            // user wants
-            if (middlewareConfiguration.AuthenticationMiddleware == null)
+            builder.Use(async (context, task) =>
             {
-                builder.UseAuthenticationMiddleware();
-            }
-            else
-            {
-                builder.Use(middlewareConfiguration.AuthenticationMiddleware);
-            }
-
-            // The next thing we do is look at any claims transforms in case this is important for authorisation
-            builder.UseClaimsBuilderMiddleware();
-
-            // Allow pre authorisation logic. The idea being people might want to run something custom before what is built in.
-            builder.UseIfNotNull(middlewareConfiguration.PreAuthorisationMiddleware);
-
-            // Now we have authenticated and done any claims transformation we 
-            // can authorise the request
-            // We allow the ocelot middleware to be overriden by whatever the
-            // user wants
-            if (middlewareConfiguration.AuthorisationMiddleware == null)
-            {
-                builder.UseAuthorisationMiddleware();
-            }
-            else
-            {
-                builder.Use(middlewareConfiguration.AuthorisationMiddleware);
-            }
-
-            // Now we can run any header transformation logic
-            builder.UseHttpRequestHeadersBuilderMiddleware();
-
-            // Allow the user to implement their own query string manipulation logic
-            builder.UseIfNotNull(middlewareConfiguration.PreQueryStringBuilderMiddleware);
-
-            // Now we can run any query string transformation logic
-            builder.UseQueryStringBuilderMiddleware();
-
-            // Get the load balancer for this request
-            builder.UseLoadBalancingMiddleware();
-
-            // This takes the downstream route we retrieved earlier and replaces any placeholders with the variables that should be used
-            builder.UseDownstreamUrlCreatorMiddleware();
-
-            // Not sure if this is the best place for this but we use the downstream url 
-            // as the basis for our cache key.
-            builder.UseOutputCacheMiddleware();
-
-            // Everything should now be ready to build or HttpRequest
-            builder.UseHttpRequestBuilderMiddleware();
-
-            //We fire off the request and set the response on the scoped data repo
-            builder.UseHttpRequesterMiddleware();
+                var downstreamContext = new DownstreamContext(context);
+                await firstDelegate.Invoke(downstreamContext);
+            });
 
             return builder;
+        }
+
+        private static bool UsingEurekaServiceDiscoveryProvider(IInternalConfiguration configuration)
+        {
+            return configuration?.ServiceProviderConfiguration != null && configuration.ServiceProviderConfiguration.Type?.ToLower() == "eureka";
         }
 
         private static bool UsingRafty(IApplicationBuilder builder)
@@ -185,63 +94,108 @@ namespace Ocelot.Middleware
             node.Start(nodeId.Id);
         }
 
-        private static async Task<IOcelotConfiguration> CreateConfiguration(IApplicationBuilder builder)
+        private static async Task<IInternalConfiguration> CreateConfiguration(IApplicationBuilder builder)
         {
-            var deps = GetDependencies(builder);
+            // make configuration from file system?
+            // earlier user needed to add ocelot files in startup configuration stuff, asp.net will map it to this
+            var fileConfig = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
+            
+            // now create the config
+            var internalConfigCreator = (IInternalConfigurationCreator)builder.ApplicationServices.GetService(typeof(IInternalConfigurationCreator));
+            var internalConfig = await internalConfigCreator.Create(fileConfig.Value);
 
-            var ocelotConfiguration = await deps.provider.Get();
+            // now save it in memory
+            var internalConfigRepo = (IInternalConfigurationRepository)builder.ApplicationServices.GetService(typeof(IInternalConfigurationRepository));
+            internalConfigRepo.AddOrReplace(internalConfig.Data);
 
-            if (ConfigurationNotSetUp(ocelotConfiguration))
+            var fileConfigSetter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
+
+            var fileConfigRepo = (IFileConfigurationRepository)builder.ApplicationServices.GetService(typeof(IFileConfigurationRepository));
+
+            if (UsingConsul(fileConfigRepo))
             {
-                var response = await SetConfig(builder, deps.fileConfiguration, deps.setter, deps.provider, deps.repo);
-                
-                if (UnableToSetConfig(response))
+                await SetFileConfigInConsul(builder, fileConfigRepo, fileConfig, internalConfigCreator, internalConfigRepo);
+            }
+            else
+            {
+                await SetFileConfig(fileConfigSetter, fileConfig);
+            }
+
+            return GetOcelotConfigAndReturn(internalConfigRepo);
+        }
+
+        private static async Task SetFileConfigInConsul(IApplicationBuilder builder,
+            IFileConfigurationRepository fileConfigRepo, IOptions<FileConfiguration> fileConfig,
+            IInternalConfigurationCreator internalConfigCreator, IInternalConfigurationRepository internalConfigRepo)
+        {
+            // get the config from consul.
+            var fileConfigFromConsul = await fileConfigRepo.Get();
+
+            if (IsError(fileConfigFromConsul))
+            {
+                ThrowToStopOcelotStarting(fileConfigFromConsul);
+            }
+            else if (ConfigNotStoredInConsul(fileConfigFromConsul))
+            {
+                //there was no config in consul set the file in config in consul
+                await fileConfigRepo.Set(fileConfig.Value);
+            }
+            else
+            {
+                // create the internal config from consul data
+                var internalConfig = await internalConfigCreator.Create(fileConfigFromConsul.Data);
+
+                if (IsError(internalConfig))
                 {
-                    ThrowToStopOcelotStarting(response);
+                    ThrowToStopOcelotStarting(internalConfig);
+                }
+                else
+                {
+                    // add the internal config to the internal repo
+                    var response = internalConfigRepo.AddOrReplace(internalConfig.Data);
+
+                    if (IsError(response))
+                    {
+                        ThrowToStopOcelotStarting(response);
+                    }
+                }
+
+                if (IsError(internalConfig))
+                {
+                    ThrowToStopOcelotStarting(internalConfig);
                 }
             }
 
-            return await GetOcelotConfigAndReturn(deps.provider);
+            //todo - this starts the poller if it has been registered...please this is so bad.
+            var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
         }
 
-        private static async Task<Response> SetConfig(IApplicationBuilder builder, IOptions<FileConfiguration> fileConfiguration, IFileConfigurationSetter setter, IOcelotConfigurationProvider provider, IFileConfigurationRepository repo)
+        private static async Task SetFileConfig(IFileConfigurationSetter fileConfigSetter, IOptions<FileConfiguration> fileConfig)
         {
-            if (UsingConsul(repo))
+            Response response;
+            response = await fileConfigSetter.Set(fileConfig.Value);
+
+            if (IsError(response))
             {
-                return await SetUpConfigFromConsul(builder, repo, setter, fileConfiguration);
+                ThrowToStopOcelotStarting(response);
             }
-            
-            return await setter.Set(fileConfiguration.Value);
         }
 
-        private static bool UnableToSetConfig(Response response)
+        private static bool ConfigNotStoredInConsul(Responses.Response<FileConfiguration> fileConfigFromConsul)
+        {
+            return fileConfigFromConsul.Data == null;
+        }
+
+        private static bool IsError(Response response)
         {
             return response == null || response.IsError;
         }
 
-        private static bool ConfigurationNotSetUp(Ocelot.Responses.Response<IOcelotConfiguration> ocelotConfiguration)
+        private static IInternalConfiguration GetOcelotConfigAndReturn(IInternalConfigurationRepository provider)
         {
-            return ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError;
-        }
+            var ocelotConfiguration = provider.Get();
 
-        private static (IOptions<FileConfiguration> fileConfiguration, IFileConfigurationSetter setter, IOcelotConfigurationProvider provider, IFileConfigurationRepository repo) GetDependencies(IApplicationBuilder builder)
-        {
-            var fileConfiguration = (IOptions<FileConfiguration>)builder.ApplicationServices.GetService(typeof(IOptions<FileConfiguration>));
-            
-            var setter = (IFileConfigurationSetter)builder.ApplicationServices.GetService(typeof(IFileConfigurationSetter));
-            
-            var provider = (IOcelotConfigurationProvider)builder.ApplicationServices.GetService(typeof(IOcelotConfigurationProvider));
-
-            var repo = (IFileConfigurationRepository)builder.ApplicationServices.GetService(typeof(IFileConfigurationRepository));
-
-            return (fileConfiguration, setter, provider, repo);
-        }
-
-        private static async Task<IOcelotConfiguration> GetOcelotConfigAndReturn(IOcelotConfigurationProvider provider)
-        {
-            var ocelotConfiguration = await provider.Get();
-
-            if(ocelotConfiguration == null || ocelotConfiguration.Data == null || ocelotConfiguration.IsError)
+            if(ocelotConfiguration?.Data == null || ocelotConfiguration.IsError)
             {
                 ThrowToStopOcelotStarting(ocelotConfiguration);
             }
@@ -259,71 +213,32 @@ namespace Ocelot.Middleware
             return fileConfigRepo.GetType() == typeof(ConsulFileConfigurationRepository);
         }
 
-        private static async Task<Response> SetUpConfigFromConsul(IApplicationBuilder builder, IFileConfigurationRepository consulFileConfigRepo, IFileConfigurationSetter setter, IOptions<FileConfiguration> fileConfig)
+        private static void CreateAdministrationArea(IApplicationBuilder builder, IInternalConfiguration configuration)
         {
-            Response config = null;
-
-            var ocelotConfigurationRepository =
-                (IOcelotConfigurationRepository) builder.ApplicationServices.GetService(
-                    typeof(IOcelotConfigurationRepository));
-            var ocelotConfigurationCreator =
-                (IOcelotConfigurationCreator) builder.ApplicationServices.GetService(
-                    typeof(IOcelotConfigurationCreator));
-
-            var fileConfigFromConsul = await consulFileConfigRepo.Get();
-            if (fileConfigFromConsul.Data == null)
-            {
-                config = await setter.Set(fileConfig.Value);
-            }
-            else
-            {
-                var ocelotConfig = await ocelotConfigurationCreator.Create(fileConfigFromConsul.Data);
-                if(ocelotConfig.IsError)
-                {
-                    return new ErrorResponse(ocelotConfig.Errors);
-                }
-                config = await ocelotConfigurationRepository.AddOrReplace(ocelotConfig.Data);
-                //todo - this starts the poller if it has been registered...please this is so bad.
-                var hack = builder.ApplicationServices.GetService(typeof(ConsulFileConfigurationPoller));
-            }
-
-            return new OkResponse();
-        }
-
-        private static async Task CreateAdministrationArea(IApplicationBuilder builder, IOcelotConfiguration configuration)
-        {
-            var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
-
-            if(!string.IsNullOrEmpty(configuration.AdministrationPath) && identityServerConfiguration != null)
+            if(!string.IsNullOrEmpty(configuration.AdministrationPath))
             {
                 builder.Map(configuration.AdministrationPath, app =>
                 {
-                    app.UseIdentityServer();
+                    //todo - hack so we know that we are using internal identity server
+                    var identityServerConfiguration = (IIdentityServerConfiguration)builder.ApplicationServices.GetService(typeof(IIdentityServerConfiguration));
+                    if (identityServerConfiguration != null)
+                    {
+                        app.UseIdentityServer();
+                    }
+
                     app.UseAuthentication();
                     app.UseMvc();
                 });
             }
         }
-        
-        private static void UseIfNotNull(this IApplicationBuilder builder, Func<HttpContext, Func<Task>, Task> middleware)
-        {
-            if (middleware != null)
-            {
-                builder.Use(middleware);
-            }
-        }
 
-        /// <summary>
-         /// Configure a DiagnosticListener to listen for diagnostic events when the middleware starts and ends
-         /// </summary>
-         /// <param name="builder"></param>
-         private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
-         {
+        private static void ConfigureDiagnosticListener(IApplicationBuilder builder)
+        {
             var env = (IHostingEnvironment)builder.ApplicationServices.GetService(typeof(IHostingEnvironment));
             var listener = (OcelotDiagnosticListener)builder.ApplicationServices.GetService(typeof(OcelotDiagnosticListener));
             var diagnosticListener = (DiagnosticListener)builder.ApplicationServices.GetService(typeof(DiagnosticListener));
             diagnosticListener.SubscribeWithAdapter(listener);
-         }
+        }
         
         private static void OnShutdown(IApplicationBuilder app)
         {

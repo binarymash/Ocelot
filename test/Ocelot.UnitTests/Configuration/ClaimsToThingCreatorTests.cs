@@ -72,13 +72,14 @@ namespace Ocelot.UnitTests.Configuration
         private void ThenTheLoggerIsCalledCorrectly()
         {
             _logger
-                .Verify(x => x.LogDebug(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+                .Verify(x => x.LogDebug(It.IsAny<string>()), Times.Once);
         }
 
         private void ThenClaimsToThingsAreReturned()
         {
             _result.Count.ShouldBeGreaterThan(0);
         }
+
         private void GivenTheFollowingDictionary(Dictionary<string,string> claimsToThings)
         {
             _claimsToThings = claimsToThings;

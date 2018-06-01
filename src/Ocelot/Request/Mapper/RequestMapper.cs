@@ -5,9 +5,7 @@
     using System.IO;
     using System.Linq;
     using System.Net.Http;
-    using System.Net.Http.Headers;
     using System.Threading.Tasks;
-
     using Microsoft.AspNetCore.Http;
     using Microsoft.AspNetCore.Http.Extensions;
     using Microsoft.Extensions.Primitives;
@@ -47,9 +45,26 @@
 
             var content = new ByteArrayContent(await ToByteArray(request.Body));
 
-            content.Headers.TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
+            content.Headers
+                .TryAddWithoutValidation("Content-Type", new[] {request.ContentType});
 
+            AddHeaderIfExistsOnRequest("Content-Language", content, request);
+            AddHeaderIfExistsOnRequest("Content-Location", content, request);
+            AddHeaderIfExistsOnRequest("Content-Range", content, request);
+            AddHeaderIfExistsOnRequest("Content-MD5", content, request);
+            AddHeaderIfExistsOnRequest("Content-Disposition", content, request);
+            AddHeaderIfExistsOnRequest("Content-Encoding", content, request);
+            
             return content;
+        }
+
+        private void AddHeaderIfExistsOnRequest(string key, HttpContent content, HttpRequest request)
+        {
+            if(request.Headers.ContainsKey(key))
+            {
+                content.Headers
+                    .TryAddWithoutValidation(key, request.Headers[key].ToList());  
+            }            
         }
 
         private HttpMethod MapMethod(HttpRequest request)
@@ -66,7 +81,6 @@
         {
             foreach (var header in request.Headers)
             {
-                //todo get rid of if..
                 if (IsSupportedHeader(header))
                 {
                     requestMessage.Headers.TryAddWithoutValidation(header.Key, header.Value.ToArray());
@@ -92,4 +106,3 @@
         }
     }
 }
-

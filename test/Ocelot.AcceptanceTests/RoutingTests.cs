@@ -298,13 +298,13 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51874,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
                         ServiceName = "botCore",
-                        LoadBalancer = "LeastConnection"
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
                     new FileReRoute
                     {
@@ -315,18 +315,18 @@ namespace Ocelot.AcceptanceTests
                             new FileHostAndPort
                             {
                                 Host = "localhost",
-                                Port = 51879,
+                                Port = 51874,
                             }
                         },
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
                         ServiceName = "botCore",
-                        LoadBalancer = "LeastConnection"
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     }
                 }
             };
 
-            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51879", "/api/v1/vacancy/1", 200, "Hello from Laura"))
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:51874", "/api/v1/vacancy/1", 200, "Hello from Laura"))
                 .And(x => _steps.GivenThereIsAConfiguration(configuration))
                 .And(x => _steps.GivenOcelotIsRunning())
                 .When(x => _steps.WhenIGetUrlOnTheApiGateway("/vacancy/1"))
@@ -543,7 +543,6 @@ namespace Ocelot.AcceptanceTests
                 .BDDfy();
         }
 
-
         [Fact]
         public void should_return_response_200_with_complex_url_that_starts_with_placeholder()
         {
@@ -577,7 +576,6 @@ namespace Ocelot.AcceptanceTests
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Some Product"))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_not_add_trailing_slash_to_downstream_url()
@@ -804,7 +802,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamPathTemplate = "/vacancy/",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
                         ServiceName = "botCore",
-                        LoadBalancer = "LeastConnection"
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     },
                     new FileReRoute
                     {
@@ -821,7 +819,7 @@ namespace Ocelot.AcceptanceTests
                         UpstreamPathTemplate = "/vacancy/{vacancyId}",
                         UpstreamHttpMethod = new List<string> { "Options",  "Put", "Get", "Post", "Delete" },
                         ServiceName = "botCore",
-                        LoadBalancer = "LeastConnection"
+                        LoadBalancerOptions = new FileLoadBalancerOptions { Type = "LeastConnection" }
                     }
                 }
             };
@@ -833,7 +831,6 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.NotFound))
                 .BDDfy();
         }
-
 
         [Fact]
         public void should_fix_145()
@@ -872,6 +869,105 @@ namespace Ocelot.AcceptanceTests
                 .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
                 .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .And(x => ThenTheDownstreamUrlPathShouldBe("/api/swagger/lib/backbone-min.js"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_use_priority()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/goods/{url}",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/goods/{url}",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 53879,
+                                }
+                            },
+                            Priority = 0
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/goods/delete",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/goods/delete",
+                            UpstreamHttpMethod = new List<string> { "Get" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 52879,
+                                }
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:52879/", "/goods/delete", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/goods/delete"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
+                .BDDfy();
+        }
+
+        [Fact]
+        public void should_fix_issue_271()
+        {
+            var configuration = new FileConfiguration
+            {
+                ReRoutes = new List<FileReRoute>
+                    {
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/api/v1/{everything}",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/api/v1/{everything}",
+                            UpstreamHttpMethod = new List<string> { "Get", "Put", "Post" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 54879,
+                                }
+                            },
+                        },
+                        new FileReRoute
+                        {
+                            DownstreamPathTemplate = "/connect/token",
+                            DownstreamScheme = "http",
+                            UpstreamPathTemplate = "/connect/token",
+                            UpstreamHttpMethod = new List<string> { "Post" },
+                            DownstreamHostAndPorts = new List<FileHostAndPort>
+                            {
+                                new FileHostAndPort
+                                {
+                                    Host = "localhost",
+                                    Port = 5001,
+                                }
+                            },
+                        }
+                    }
+            };
+
+            this.Given(x => x.GivenThereIsAServiceRunningOn("http://localhost:54879/", "/api/v1/modules/Test", 200, "Hello from Laura"))
+                .And(x => _steps.GivenThereIsAConfiguration(configuration))
+                .And(x => _steps.GivenOcelotIsRunning())
+                .When(x => _steps.WhenIGetUrlOnTheApiGateway("/api/v1/modules/Test"))
+                .Then(x => _steps.ThenTheStatusCodeShouldBe(HttpStatusCode.OK))
+                .And(x => _steps.ThenTheResponseBodyShouldBe("Hello from Laura"))
                 .BDDfy();
         }
 
